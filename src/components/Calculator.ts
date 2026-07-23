@@ -26,7 +26,7 @@ export class Calculator {
   // PUBLIC API
   // ─────────────────────────────────────────────
 
-  input(key: string): void {
+  async input(key: string): Promise<void> {
     if (this.errorTimeout) {
       clearTimeout(this.errorTimeout);
       this.errorTimeout = null;
@@ -210,10 +210,10 @@ export class Calculator {
   }
 
   private attachListeners(): void {
-    this.container.addEventListener('click', (e) => {
+    this.container.addEventListener('click', async (e) => {
       const target = e.target as HTMLElement;
       const key = target.dataset.key;
-      if (key) this.input(key);
+      if (key) await this.input(key);
     });
   }
 
