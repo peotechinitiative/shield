@@ -1,4 +1,4 @@
-export type Operator = '+' | '-' | '×' | '÷';
+export type Operator = '+' | '-' | '*' | '/';
 
 export class Calculator {
   private display = '0';
@@ -12,6 +12,7 @@ export class Calculator {
   private errorTimeout: ReturnType<typeof setTimeout> | null = null;
   private displayEl: HTMLElement | null = null;
   private isScientific = false;
+  private clickHandler: ((e: Event) => void) | null = null;
 
   constructor(
     app: HTMLElement,
@@ -51,13 +52,12 @@ export class Calculator {
       return;
     }
 
-    if (['+', '-', '×', '÷'].includes(key)) {
+    if (['+', '-', '*', '/'].includes(key)) {
       this.inputOperator(key as Operator);
       return;
     }
 
-    // Scientific functions
-    if (['sin', 'cos', 'tan', 'log', 'ln', 'sqrt', 'x²', '1/x', 'π', 'e', '%', '±'].includes(key)) {
+    if (['sin', 'cos', 'tan', 'log', 'ln', 'sqrt', 'x2', '1/x', 'pi', 'e', '%', 'pm'].includes(key)) {
       this.inputScientific(key);
       return;
     }
@@ -87,6 +87,9 @@ export class Calculator {
   }
 
   destroy(): void {
+    if (this.clickHandler) {
+      this.container.removeEventListener('click', this.clickHandler);
+    }
     this.container.innerHTML = '';
     if (this.errorTimeout) {
       clearTimeout(this.errorTimeout);
@@ -189,13 +192,13 @@ export class Calculator {
       case 'sqrt':
         result = Math.sqrt(current);
         break;
-      case 'x²':
+      case 'x2':
         result = current * current;
         break;
       case '1/x':
         result = 1 / current;
         break;
-      case 'π':
+      case 'pi':
         result = Math.PI;
         break;
       case 'e':
@@ -204,7 +207,7 @@ export class Calculator {
       case '%':
         result = current / 100;
         break;
-      case '±':
+      case 'pm':
         result = -current;
         break;
     }
@@ -226,8 +229,8 @@ export class Calculator {
     switch (op) {
       case '+': return a + b;
       case '-': return a - b;
-      case '×': return a * b;
-      case '÷': return b !== 0 ? a / b : NaN;
+      case '*': return a * b;
+      case '/': return b !== 0 ? a / b : NaN;
       default: return b;
     }
   }
@@ -235,55 +238,76 @@ export class Calculator {
   // RENDERING
 
   private render(): void {
+    if (this.clickHandler) {
+      this.container.removeEventListener('click', this.clickHandler);
+      this.clickHandler = null;
+    }
     this.container.innerHTML = '';
 
     const wrapper = document.createElement('div');
     wrapper.className = 'calculator-container';
 
     const scientificButtons = this.isScientific ? `
-      <button data-key="sin" class="btn-sci">sin</button>
-      <button data-key="cos" class="btn-sci">cos</button>
-      <button data-key="tan" class="btn-sci">tan</button>
-      <button data-key="log" class="btn-sci">log</button>
-      <button data-key="ln" class="btn-sci">ln</button>
-      <button data-key="sqrt" class="btn-sci">√</button>
-      <button data-key="x²" class="btn-sci">x²</button>
-      <button data-key="1/x" class="btn-sci">1/x</button>
-      <button data-key="π" class="btn-sci">π</button>
-      <button data-key="e" class="btn-sci">e</button>
-      <button data-key="%" class="btn-sci">%</button>
-      <button data-key="±" class="btn-sci">±</button>
+      <div class="sci-row">
+        <button data-key="sin" class="btn-sci">sin</button>
+        <button data-key="cos" class="btn-sci">cos</button>
+        <button data-key="tan" class="btn-sci">tan</button>
+        <button data-key="log" class="btn-sci">log</button>
+      </div>
+      <div class="sci-row">
+        <button data-key="ln" class="btn-sci">ln</button>
+        <button data-key="sqrt" class="btn-sci">sqrt</button>
+        <button data-key="x2" class="btn-sci">x2</button>
+        <button data-key="1/x" class="btn-sci">1/x</button>
+      </div>
+      <div class="sci-row">
+        <button data-key="pi" class="btn-sci">pi</button>
+        <button data-key="e" class="btn-sci">e</button>
+        <button data-key="%" class="btn-sci">%</button>
+        <button data-key="pm" class="btn-sci">+/-</button>
+      </div>
     ` : '';
 
     wrapper.innerHTML = `
       <div class="calculator-body">
         <div class="calc-display" id="calc-display">0</div>
-        <div class="calc-buttons ${this.isScientific ? 'scientific' : ''}">
-          <button data-key="SCI" class="btn-sci-toggle">${this.isScientific ? 'BASIC' : 'SCI'}</button>
-          <button data-key="AC" class="btn-clear">AC</button>
-          <button data-key="C" class="btn-clear">C</button>
-          <button data-key="÷" class="btn-op">÷</button>
+
+        <div class="calc-buttons">
+          <div class="btn-row">
+            <button data-key="SCI" class="btn-sci-toggle">${this.isScientific ? 'BASIC' : 'SCI'}</button>
+            <button data-key="C" class="btn-gray">C</button>
+            <button data-key="pm" class="btn-gray">+/-</button>
+            <button data-key="/" class="btn-orange">&divide;</button>
+          </div>
 
           ${scientificButtons}
 
-          <button data-key="7">7</button>
-          <button data-key="8">8</button>
-          <button data-key="9">9</button>
-          <button data-key="×" class="btn-op">×</button>
+          <div class="btn-row">
+            <button data-key="7" class="btn-dark">7</button>
+            <button data-key="8" class="btn-dark">8</button>
+            <button data-key="9" class="btn-dark">9</button>
+            <button data-key="*" class="btn-orange">&times;</button>
+          </div>
 
-          <button data-key="4">4</button>
-          <button data-key="5">5</button>
-          <button data-key="6">6</button>
-          <button data-key="-" class="btn-op">-</button>
+          <div class="btn-row">
+            <button data-key="4" class="btn-dark">4</button>
+            <button data-key="5" class="btn-dark">5</button>
+            <button data-key="6" class="btn-dark">6</button>
+            <button data-key="-" class="btn-orange">-</button>
+          </div>
 
-          <button data-key="1">1</button>
-          <button data-key="2">2</button>
-          <button data-key="3">3</button>
-          <button data-key="+" class="btn-op">+</button>
+          <div class="btn-row">
+            <button data-key="1" class="btn-dark">1</button>
+            <button data-key="2" class="btn-dark">2</button>
+            <button data-key="3" class="btn-dark">3</button>
+            <button data-key="+" class="btn-orange">+</button>
+          </div>
 
-          <button data-key="0" style="grid-column: span 2;">0</button>
-          <button data-key=".">.</button>
-          <button data-key="=" class="btn-equals">=</button>
+          <div class="btn-row">
+            <button data-key="0" class="btn-dark btn-zero">0</button>
+            <button data-key="." class="btn-dark">.</button>
+            <button data-key="=" class="btn-orange">=</button>
+          </div>
         </div>
       </div>
       <p class="calc-footer">Calculator v1.0</p>
@@ -297,11 +321,12 @@ export class Calculator {
   }
 
   private attachListeners(): void {
-    this.container.addEventListener('click', async (e) => {
+    this.clickHandler = async (e: Event) => {
       const target = e.target as HTMLElement;
       const key = target.dataset.key;
       if (key) await this.input(key);
-    });
+    };
+    this.container.addEventListener('click', this.clickHandler);
   }
 
   private updateDisplay(): void {
