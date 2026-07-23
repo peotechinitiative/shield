@@ -1,84 +1,101 @@
-import type { Operator } from '../types';
+export type Operator = '+' | '-' | '×' | '÷';
 
-// const SECRET_CODE = '2468';
 export class Calculator {
   private display = '0';
-  private firstOperand: number | null = null;
+  private firstValue: number | null = null;
   private operator: Operator | null = null;
   private waitingForSecond = false;
-  private digitLog = '';
   private lastKeyWasEquals = false;
-  private onUnlock: () => void;
-  private displayEl: HTMLElement;
+  private keyLog = '';           // Tracks ALL keys: digits + operators + equals
   private container: HTMLElement;
+  private onUnlockAttempt: (keyLog: string) => Promise<boolean>;
+  private errorTimeout: ReturnType<typeof setTimeout> | null = null;
+  private displayEl: HTMLElement | null = null;
 
-  constructor(parent: HTMLElement, onUnlock: () => void) {
-    this.onUnlock = onUnlock;
-    this.container = document.createElement('div');
-    this.container.id = 'disguise';
-    this.container.innerHTML = this.getHTML();
-    parent.appendChild(this.container);
-    this.displayEl = this.container.querySelector('#calcDisplay')!;
-    this.bindEvents();
+  constructor(
+    app: HTMLElement,
+    onUnlockAttempt: (keyLog: string) => Promise<boolean>
+  ) {
+    this.container = app;
+    this.onUnlockAttempt = onUnlockAttempt;
+    this.render();
+    this.attachListeners();
   }
 
-  private getHTML(): string {
-    return `
-      <div class="calc-display" id="calcDisplay">0</div>
-      <div class="calc-grid">
-        <button class="calc-key fn" data-fn="clear">C</button>
-        <button class="calc-key fn" data-fn="sign">±</button>
-        <button class="calc-key fn" data-fn="percent">%</button>
-        <button class="calc-key op" data-op="÷">÷</button>
-        <button class="calc-key num" data-num="7">7</button>
-        <button class="calc-key num" data-num="8">8</button>
-        <button class="calc-key num" data-num="9">9</button>
-        <button class="calc-key op" data-op="×">×</button>
-        <button class="calc-key num" data-num="4">4</button>
-        <button class="calc-key num" data-num="5">5</button>
-        <button class="calc-key num" data-num="6">6</button>
-        <button class="calc-key op" data-op="−">−</button>
-        <button class="calc-key num" data-num="1">1</button>
-        <button class="calc-key num" data-num="2">2</button>
-        <button class="calc-key num" data-num="3">3</button>
-        <button class="calc-key op" data-op="+">+</button>
-        <button class="calc-key num zero" data-num="0">0</button>
-        <button class="calc-key num" data-num=".">.</button>
-        <button class="calc-key op" data-fn="equals">=</button>
-      </div>
-    `;
+  // ─────────────────────────────────────────────
+  // PUBLIC API
+  // ─────────────────────────────────────────────
+
+  input(key: string): void {
+    if (this.errorTimeout) {
+      clearTimeout(this.errorTimeout);
+      this.errorTimeout = null;
+    }
+
+    if (key === 'C') {
+      this.clear();
+      return;
+    }
+
+    if (key === '=') {
+      await this.inputEquals();
+      return;
+    }
+
+    if (['+', '-', '×', '÷'].includes(key)) {
+      this.inputOperator(key as Operator);
+      return;
+    }
+
+    if (/^[0-9.]$/.test(key)) {
+      this.inputDigit(key);
+      return;
+    }
   }
 
-  private bindEvents(): void {
-    this.container.querySelectorAll<HTMLButtonElement>('.calc-key[data-num]').forEach(btn => {
-      btn.addEventListener('click', () => this.inputDigit(btn.dataset.num!));
-    });
-    this.container.querySelectorAll<HTMLButtonElement>('.calc-key[data-op]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        this.inputOperator(btn.dataset.op as Operator);
-        this.render();
-      });
-    });
-    this.container.querySelector<HTMLButtonElement>('[data-fn="clear"]')!.addEventListener('click', () => this.clearAll());
-    this.container.querySelector<HTMLButtonElement>('[data-fn="sign"]')!.addEventListener('click', () => {
-      this.display = String(parseFloat(this.display) * -1);
-      this.render();
-    });
-    this.container.querySelector<HTMLButtonElement>('[data-fn="percent"]')!.addEventListener('click', () => {
-      this.display = String(parseFloat(this.display) / 100);
-      this.render();
-    });
-    this.container.querySelector<HTMLButtonElement>('[data-fn="equals"]')!.addEventListener('click', () => {
-      if (this.lastKeyWasEquals) {
-        this.onUnlock();
-        return;
-      }
-      this.compute();
-      this.digitLog = '';
-      this.render();
-      this.lastKeyWasEquals = true;
-    });
+  getDisplay(): string {
+    return this.display;
   }
+
+  clear(): void {
+    this.display = '0';
+    this.firstValue = null;
+    this.operator = null;
+    this.waitingForSecond = false;
+    this.lastKeyWasEquals = false;
+    this.keyLog = '';
+    this.updateDisplay();
+  }
+
+  destroy(): void {
+    this.container.innerHTML = '';
+    if (this.errorTimeout) {
+      clearTimeout(this.errorTimeout);
+    }
+  }
+
+  // ─────────────────────────────────────────────
+  // UNLOCK LOGIC (SECURITY)
+  // ─────────────────────────────────────────────
+
+  private async checkUnlock(): Promise<void> {
+    const wasHandled = await this.onUnlockAttempt(this.keyLog);
+
+    if (!wasHandled && this.keyLog.length >= 12) {
+      // Wrong code: show error briefly, then reset
+      this.display = 'Error';
+      this.updateDisplay();
+      this.errorTimeout = setTimeout(() => {
+        this.keyLog = '';
+        this.display = '0';
+        this.updateDisplay();
+      }, 800);
+    }
+  }
+
+  // ─────────────────────────────────────────────
+  // INPUT HANDLERS
+  // ─────────────────────────────────────────────
 
   private inputDigit(d: string): void {
     if (this.waitingForSecond) {
@@ -87,51 +104,122 @@ export class Calculator {
     } else {
       this.display = (this.display === '0' && d !== '.') ? d : this.display + d;
     }
-    this.digitLog += d;
+
+    this.keyLog += d;
     this.lastKeyWasEquals = false;
-    this.render();
+    this.checkUnlock();
+    this.updateDisplay();
   }
 
   private inputOperator(op: Operator): void {
-    if (this.operator && !this.waitingForSecond) {
-      this.compute();
+    const current = parseFloat(this.display);
+
+    if (this.firstValue === null) {
+      this.firstValue = current;
+    } else if (this.operator && !this.waitingForSecond) {
+      const result = this.calculate(this.firstValue, current, this.operator);
+      this.display = String(result);
+      this.firstValue = result;
+    } else {
+      this.firstValue = current;
     }
-    this.firstOperand = parseFloat(this.display);
+
     this.operator = op;
     this.waitingForSecond = true;
-    this.digitLog = '';
+    this.keyLog += op;
     this.lastKeyWasEquals = false;
+    this.checkUnlock();
+    this.updateDisplay();
   }
 
-  private compute(): void {
-    if (this.operator === null) return;
-    const second = parseFloat(this.display);
-    let result = second;
-    switch (this.operator) {
-      case '+': result = this.firstOperand! + second; break;
-      case '−': result = this.firstOperand! - second; break;
-      case '×': result = this.firstOperand! * second; break;
-      case '÷': result = second === 0 ? 0 : this.firstOperand! / second; break;
+  private async inputEquals(): Promise<void> {
+    if (this.firstValue === null || this.operator === null) {
+      this.keyLog += '=';
+      await this.checkUnlock();
+      return;
     }
-    this.display = String(Math.round(result * 1e8) / 1e8);
+
+    const secondValue = parseFloat(this.display);
+    const result = this.calculate(this.firstValue, secondValue, this.operator);
+
+    this.display = String(result);
+    this.firstValue = null;
     this.operator = null;
+    this.waitingForSecond = true;
+    this.keyLog += '=';
+    this.lastKeyWasEquals = true;
+    await this.checkUnlock();
+    this.updateDisplay();
   }
 
-  private clearAll(): void {
-    this.display = '0';
-    this.firstOperand = null;
-    this.operator = null;
-    this.waitingForSecond = false;
-    this.digitLog = '';
-    this.lastKeyWasEquals = false;
-    this.render();
+  // ─────────────────────────────────────────────
+  // CALCULATION
+  // ─────────────────────────────────────────────
+
+  private calculate(a: number, b: number, op: Operator): number {
+    switch (op) {
+      case '+': return a + b;
+      case '-': return a - b;
+      case '×': return a * b;
+      case '÷': return b !== 0 ? a / b : NaN;
+      default: return b;
+    }
   }
+
+  // ─────────────────────────────────────────────
+  // RENDERING
+  // ─────────────────────────────────────────────
 
   private render(): void {
-    this.displayEl.textContent = this.display;
+    this.container.innerHTML = '';
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'calculator-container';
+    wrapper.innerHTML = `
+      <div class="calculator-body">
+        <div class="calc-display" id="calc-display">0</div>
+        <div class="calc-buttons">
+          <button data-key="C" class="btn-clear">C</button>
+          <button data-key="÷" class="btn-op">÷</button>
+          <button data-key="×" class="btn-op">×</button>
+          <button data-key="-" class="btn-op">−</button>
+
+          <button data-key="7">7</button>
+          <button data-key="8">8</button>
+          <button data-key="9">9</button>
+          <button data-key="+" class="btn-op">+</button>
+
+          <button data-key="4">4</button>
+          <button data-key="5">5</button>
+          <button data-key="6">6</button>
+          <button data-key="=" class="btn-equals" style="grid-row: span 2;">=</button>
+
+          <button data-key="1">1</button>
+          <button data-key="2">2</button>
+          <button data-key="3">3</button>
+
+          <button data-key="0" style="grid-column: span 2;">0</button>
+          <button data-key=".">.</button>
+        </div>
+      </div>
+      <p class="calc-footer">Calculator v1.0</p>
+    `;
+
+    this.container.appendChild(wrapper);
+    this.displayEl = wrapper.querySelector('#calc-display');
   }
 
-  destroy(): void {
-    this.container.remove();
+  private attachListeners(): void {
+    this.container.addEventListener('click', (e) => {
+      const target = e.target as HTMLElement;
+      const key = target.dataset.key;
+      if (key) this.input(key);
+    });
+  }
+
+  private updateDisplay(): void {
+    if (this.displayEl) {
+      this.displayEl.textContent = this.display;
+    }
   }
 }
