@@ -80,7 +80,7 @@ function showSafetyScreen() {
 // ── MAIN APP FLOW ──
 const calculator = new Calculator(app, async (keyLog: string) => {
   // FIRST LAUNCH: Default PIN opens setup wizard
-  if (isFirstLaunch() && keyLog === '2-4-6-8-=-=') {
+  if (isFirstLaunch() && keyLog === '2+4+6+8==') {
     showSetupWizard(() => {
       // After setup, show the safety screen
       showSafetyScreen();
