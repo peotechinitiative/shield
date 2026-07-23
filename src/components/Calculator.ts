@@ -6,11 +6,12 @@ export class Calculator {
   private operator: Operator | null = null;
   private waitingForSecond = false;
   private lastKeyWasEquals = false;
-  private keyLog = '';           // Tracks ALL keys: digits + operators + equals
+  private keyLog = '';
   private container: HTMLElement;
   private onUnlockAttempt: (keyLog: string) => Promise<boolean>;
   private errorTimeout: ReturnType<typeof setTimeout> | null = null;
   private displayEl: HTMLElement | null = null;
+  private isScientific = false;
 
   constructor(
     app: HTMLElement,
@@ -22,9 +23,7 @@ export class Calculator {
     this.attachListeners();
   }
 
-  // ─────────────────────────────────────────────
   // PUBLIC API
-  // ─────────────────────────────────────────────
 
   async input(key: string): Promise<void> {
     if (this.errorTimeout) {
@@ -37,13 +36,29 @@ export class Calculator {
       return;
     }
 
+    if (key === 'AC') {
+      this.allClear();
+      return;
+    }
+
     if (key === '=') {
       await this.inputEquals();
       return;
     }
 
+    if (key === 'SCI') {
+      this.toggleScientific();
+      return;
+    }
+
     if (['+', '-', '×', '÷'].includes(key)) {
       this.inputOperator(key as Operator);
+      return;
+    }
+
+    // Scientific functions
+    if (['sin', 'cos', 'tan', 'log', 'ln', 'sqrt', 'x²', '1/x', 'π', 'e', '%', '±'].includes(key)) {
+      this.inputScientific(key);
       return;
     }
 
@@ -67,6 +82,10 @@ export class Calculator {
     this.updateDisplay();
   }
 
+  allClear(): void {
+    this.clear();
+  }
+
   destroy(): void {
     this.container.innerHTML = '';
     if (this.errorTimeout) {
@@ -74,15 +93,12 @@ export class Calculator {
     }
   }
 
-  // ─────────────────────────────────────────────
   // UNLOCK LOGIC (SECURITY)
-  // ─────────────────────────────────────────────
 
   private async checkUnlock(): Promise<void> {
     const wasHandled = await this.onUnlockAttempt(this.keyLog);
 
     if (!wasHandled && this.keyLog.length >= 12) {
-      // Wrong code: show error briefly, then reset
       this.display = 'Error';
       this.updateDisplay();
       this.errorTimeout = setTimeout(() => {
@@ -93,9 +109,7 @@ export class Calculator {
     }
   }
 
-  // ─────────────────────────────────────────────
   // INPUT HANDLERS
-  // ─────────────────────────────────────────────
 
   private inputDigit(d: string): void {
     if (this.waitingForSecond) {
@@ -152,9 +166,61 @@ export class Calculator {
     this.updateDisplay();
   }
 
-  // ─────────────────────────────────────────────
+  private inputScientific(func: string): void {
+    const current = parseFloat(this.display);
+    let result = current;
+
+    switch (func) {
+      case 'sin':
+        result = Math.sin(current * Math.PI / 180);
+        break;
+      case 'cos':
+        result = Math.cos(current * Math.PI / 180);
+        break;
+      case 'tan':
+        result = Math.tan(current * Math.PI / 180);
+        break;
+      case 'log':
+        result = Math.log10(current);
+        break;
+      case 'ln':
+        result = Math.log(current);
+        break;
+      case 'sqrt':
+        result = Math.sqrt(current);
+        break;
+      case 'x²':
+        result = current * current;
+        break;
+      case '1/x':
+        result = 1 / current;
+        break;
+      case 'π':
+        result = Math.PI;
+        break;
+      case 'e':
+        result = Math.E;
+        break;
+      case '%':
+        result = current / 100;
+        break;
+      case '±':
+        result = -current;
+        break;
+    }
+
+    this.display = String(result);
+    this.waitingForSecond = true;
+    this.updateDisplay();
+  }
+
+  private toggleScientific(): void {
+    this.isScientific = !this.isScientific;
+    this.render();
+    this.attachListeners();
+  }
+
   // CALCULATION
-  // ─────────────────────────────────────────────
 
   private calculate(a: number, b: number, op: Operator): number {
     switch (op) {
@@ -166,40 +232,58 @@ export class Calculator {
     }
   }
 
-  // ─────────────────────────────────────────────
   // RENDERING
-  // ─────────────────────────────────────────────
 
   private render(): void {
     this.container.innerHTML = '';
 
     const wrapper = document.createElement('div');
     wrapper.className = 'calculator-container';
+
+    const scientificButtons = this.isScientific ? `
+      <button data-key="sin" class="btn-sci">sin</button>
+      <button data-key="cos" class="btn-sci">cos</button>
+      <button data-key="tan" class="btn-sci">tan</button>
+      <button data-key="log" class="btn-sci">log</button>
+      <button data-key="ln" class="btn-sci">ln</button>
+      <button data-key="sqrt" class="btn-sci">√</button>
+      <button data-key="x²" class="btn-sci">x²</button>
+      <button data-key="1/x" class="btn-sci">1/x</button>
+      <button data-key="π" class="btn-sci">π</button>
+      <button data-key="e" class="btn-sci">e</button>
+      <button data-key="%" class="btn-sci">%</button>
+      <button data-key="±" class="btn-sci">±</button>
+    ` : '';
+
     wrapper.innerHTML = `
       <div class="calculator-body">
         <div class="calc-display" id="calc-display">0</div>
-        <div class="calc-buttons">
+        <div class="calc-buttons ${this.isScientific ? 'scientific' : ''}">
+          <button data-key="SCI" class="btn-sci-toggle">${this.isScientific ? 'BASIC' : 'SCI'}</button>
+          <button data-key="AC" class="btn-clear">AC</button>
           <button data-key="C" class="btn-clear">C</button>
           <button data-key="÷" class="btn-op">÷</button>
-          <button data-key="×" class="btn-op">×</button>
-          <button data-key="-" class="btn-op">−</button>
+
+          ${scientificButtons}
 
           <button data-key="7">7</button>
           <button data-key="8">8</button>
           <button data-key="9">9</button>
-          <button data-key="+" class="btn-op">+</button>
+          <button data-key="×" class="btn-op">×</button>
 
           <button data-key="4">4</button>
           <button data-key="5">5</button>
           <button data-key="6">6</button>
-          <button data-key="=" class="btn-equals" style="grid-row: span 2;">=</button>
+          <button data-key="-" class="btn-op">-</button>
 
           <button data-key="1">1</button>
           <button data-key="2">2</button>
           <button data-key="3">3</button>
+          <button data-key="+" class="btn-op">+</button>
 
           <button data-key="0" style="grid-column: span 2;">0</button>
           <button data-key=".">.</button>
+          <button data-key="=" class="btn-equals">=</button>
         </div>
       </div>
       <p class="calc-footer">Calculator v1.0</p>
@@ -207,6 +291,9 @@ export class Calculator {
 
     this.container.appendChild(wrapper);
     this.displayEl = wrapper.querySelector('#calc-display');
+    if (this.displayEl) {
+      this.displayEl.textContent = this.display;
+    }
   }
 
   private attachListeners(): void {
