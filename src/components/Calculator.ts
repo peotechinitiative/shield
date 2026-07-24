@@ -24,9 +24,9 @@ export class Calculator {
     this.attachListeners();
   }
 
-  // PUBLIC API
-
   async input(key: string): Promise<void> {
+    console.log('DEBUG Calculator.input called with key:', JSON.stringify(key));
+
     if (this.errorTimeout) {
       clearTimeout(this.errorTimeout);
       this.errorTimeout = null;
@@ -96,23 +96,26 @@ export class Calculator {
     }
   }
 
-  // UNLOCK LOGIC (SECURITY)
-
   private async checkUnlock(): Promise<void> {
-    const wasHandled = await this.onUnlockAttempt(this.keyLog);
+    console.log('DEBUG checkUnlock called, keyLog:', JSON.stringify(this.keyLog));
+    try {
+      const wasHandled = await this.onUnlockAttempt(this.keyLog);
+      console.log('DEBUG onUnlockAttempt returned:', wasHandled);
 
-    if (!wasHandled && this.keyLog.length >= 12) {
-      this.display = 'Error';
-      this.updateDisplay();
-      this.errorTimeout = setTimeout(() => {
-        this.keyLog = '';
-        this.display = '0';
+      if (!wasHandled && this.keyLog.length >= 12) {
+        console.log('DEBUG: Wrong code, showing Error');
+        this.display = 'Error';
         this.updateDisplay();
-      }, 800);
+        this.errorTimeout = setTimeout(() => {
+          this.keyLog = '';
+          this.display = '0';
+          this.updateDisplay();
+        }, 800);
+      }
+    } catch (err) {
+      console.error('DEBUG checkUnlock error:', err);
     }
   }
-
-  // INPUT HANDLERS
 
   private inputDigit(d: string): void {
     if (this.waitingForSecond) {
@@ -124,6 +127,7 @@ export class Calculator {
 
     this.keyLog += d;
     this.lastKeyWasEquals = false;
+    console.log('DEBUG inputDigit, keyLog now:', JSON.stringify(this.keyLog));
     this.checkUnlock();
     this.updateDisplay();
   }
@@ -145,13 +149,17 @@ export class Calculator {
     this.waitingForSecond = true;
     this.keyLog += op;
     this.lastKeyWasEquals = false;
+    console.log('DEBUG inputOperator, keyLog now:', JSON.stringify(this.keyLog));
     this.checkUnlock();
     this.updateDisplay();
   }
 
   private async inputEquals(): Promise<void> {
+    console.log('DEBUG inputEquals called, keyLog before:', JSON.stringify(this.keyLog));
+
     if (this.firstValue === null || this.operator === null) {
       this.keyLog += '=';
+      console.log('DEBUG inputEquals: no calculation, keyLog now:', JSON.stringify(this.keyLog));
       await this.checkUnlock();
       return;
     }
@@ -165,6 +173,7 @@ export class Calculator {
     this.waitingForSecond = true;
     this.keyLog += '=';
     this.lastKeyWasEquals = true;
+    console.log('DEBUG inputEquals: calculated, keyLog now:', JSON.stringify(this.keyLog));
     await this.checkUnlock();
     this.updateDisplay();
   }
@@ -174,42 +183,18 @@ export class Calculator {
     let result = current;
 
     switch (func) {
-      case 'sin':
-        result = Math.sin(current * Math.PI / 180);
-        break;
-      case 'cos':
-        result = Math.cos(current * Math.PI / 180);
-        break;
-      case 'tan':
-        result = Math.tan(current * Math.PI / 180);
-        break;
-      case 'log':
-        result = Math.log10(current);
-        break;
-      case 'ln':
-        result = Math.log(current);
-        break;
-      case 'sqrt':
-        result = Math.sqrt(current);
-        break;
-      case 'x2':
-        result = current * current;
-        break;
-      case '1/x':
-        result = 1 / current;
-        break;
-      case 'pi':
-        result = Math.PI;
-        break;
-      case 'e':
-        result = Math.E;
-        break;
-      case '%':
-        result = current / 100;
-        break;
-      case 'pm':
-        result = -current;
-        break;
+      case 'sin': result = Math.sin(current * Math.PI / 180); break;
+      case 'cos': result = Math.cos(current * Math.PI / 180); break;
+      case 'tan': result = Math.tan(current * Math.PI / 180); break;
+      case 'log': result = Math.log10(current); break;
+      case 'ln': result = Math.log(current); break;
+      case 'sqrt': result = Math.sqrt(current); break;
+      case 'x2': result = current * current; break;
+      case '1/x': result = 1 / current; break;
+      case 'pi': result = Math.PI; break;
+      case 'e': result = Math.E; break;
+      case '%': result = current / 100; break;
+      case 'pm': result = -current; break;
     }
 
     this.display = String(result);
@@ -223,8 +208,6 @@ export class Calculator {
     this.attachListeners();
   }
 
-  // CALCULATION
-
   private calculate(a: number, b: number, op: Operator): number {
     switch (op) {
       case '+': return a + b;
@@ -234,8 +217,6 @@ export class Calculator {
       default: return b;
     }
   }
-
-  // RENDERING
 
   private render(): void {
     if (this.clickHandler) {
@@ -324,7 +305,10 @@ export class Calculator {
     this.clickHandler = async (e: Event) => {
       const target = e.target as HTMLElement;
       const key = target.dataset.key;
-      if (key) await this.input(key);
+      if (key) {
+        console.log('DEBUG button clicked, data-key:', JSON.stringify(key));
+        await this.input(key);
+      }
     };
     this.container.addEventListener('click', this.clickHandler);
   }
