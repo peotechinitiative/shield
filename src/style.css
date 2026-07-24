@@ -1,776 +1,460 @@
-:root {
-  --calc-bg: #000000;
-  --calc-display: #fff;
-  --key-fn: #a5a5a5;
-  --key-fn-text: #000;
-  --key-num: #333333;
-  --key-num-text: #fff;
-  --key-op: #ff9f0a;
-  --key-op-text: #fff;
-  --navy: #132436;
-  --navy-deep: #0b1620;
-  --slate: #4d6272;
-  --mist: #e7edf1;
-  --card: #ffffff;
-  --amber: #c98a3b;
-  --amber-soft: #f3e2c9;
-  --danger: #a8412f;
-  --safe: #3f7358;
-  --line: #dbe3e8;
-}
-
-* { box-sizing: border-box; }
-
-html, body {
-  margin: 0; padding: 0;
-  min-height: 100vh;
-  background: var(--calc-bg);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  -webkit-tap-highlight-color: transparent;
-  overscroll-behavior-y: none;
-}
-
-#app {
-  width: 100%;
-  max-width: 430px;
-  min-height: 100vh;
-  margin: 0 auto;
-  background: var(--calc-bg);
-  position: relative;
-  overflow: hidden;
-}
-
-/* Calculator */
-#disguise {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  padding: 0 12px 28px;
-}
-
-.calc-display {
-  color: var(--calc-display);
-  text-align: right;
-  padding: 0 10px 20px;
-  font-size: 64px;
-  font-weight: 300;
-  letter-spacing: 0.5px;
-  overflow-x: auto;
-  white-space: nowrap;
-  min-height: 80px;
-  display: flex;
-  align-items: flex-end;
-  justify-content: flex-end;
-}
-
-.calc-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
-}
-
-.calc-key {
-  aspect-ratio: 1 / 1;
-  border-radius: 50%;
-  border: none;
-  font-size: 26px;
-  font-weight: 400;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: filter 0.1s;
-}
-
-.calc-key.num { background: var(--key-num); color: var(--key-num-text); }
-.calc-key.fn { background: var(--key-fn); color: var(--key-fn-text); }
-.calc-key.op { background: var(--key-op); color: var(--key-op-text); font-size: 32px; }
-.calc-key:active { filter: brightness(1.3); }
-.calc-key.zero {
-  grid-column: span 2;
-  aspect-ratio: unset;
-  justify-content: flex-start;
-  padding-left: 26px;
-  border-radius: 38px;
-}
-
-/* Shell */
-.shell {
-  position: absolute;
-  inset: 0;
-  background: var(--mist);
-  display: none;
-  flex-direction: column;
-}
-
-.shell.active { display: flex; }
-
-.topbar {
-  background: var(--navy);
-  color: #fff;
-  padding: 20px 20px 22px;
-  border-radius: 0 0 22px 22px;
-  flex-shrink: 0;
-}
-
-.topbar .eyebrow {
-  font-size: 11px;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  color: #8fa4b3;
-  margin-bottom: 6px;
-}
-
-.topbar h2 {
-  margin: 0;
-  font-size: 24px;
-  font-family: Georgia, serif;
-  font-weight: 600;
-}
-
-.topbar .sub {
-  font-size: 13px;
-  color: #b7c5cd;
-  margin-top: 6px;
-}
-
-.content {
-  flex: 1;
-  overflow-y: auto;
-  padding: 18px;
-  padding-bottom: 90px;
-  -webkit-overflow-scrolling: touch;
-}
-
-.grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  margin-top: 16px;
-}
-
-.tile {
-  background: var(--card);
-  border-radius: 16px;
-  padding: 16px;
-  border: 1px solid var(--line);
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  cursor: pointer;
-  min-height: 96px;
-  transition: transform 0.1s;
-}
-
-.tile:active { transform: scale(0.98); }
-.tile .icon { font-size: 22px; }
-.tile .label {
-  font-size: 13.5px;
-  font-weight: 600;
-  line-height: 1.3;
-  color: var(--navy);
-}
-
-.panic-tile {
-  grid-column: 1 / -1;
-  background: var(--danger);
-  border: none;
-}
-.panic-tile .label { color: #fff; }
-.panic-tile .icon { color: #fff; }
-
-.section-title {
-  font-size: 13px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  color: var(--slate);
-  margin: 22px 0 10px;
-}
-
-.bottom-nav {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: #fff;
-  border-top: 1px solid var(--line);
-  display: flex;
-  justify-content: space-around;
-  padding: 10px 0 14px;
-  z-index: 10;
-}
-
-.nav-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-  font-size: 10.5px;
-  color: var(--slate);
-  cursor: pointer;
-}
-
-.nav-item.active {
-  color: var(--navy);
-  font-weight: 700;
-}
-
-.nav-icon { font-size: 19px; }
-
-.back-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: #b7c5cd;
-  font-size: 13px;
-  margin-bottom: 4px;
-  cursor: pointer;
-}
-
-.card {
-  background: var(--card);
-  border-radius: 16px;
-  padding: 16px;
-  border: 1px solid var(--line);
-  margin-bottom: 14px;
-}
-
-.card h3 { margin: 0 0 8px; font-size: 15px; color: var(--navy); }
-.card p { margin: 0; font-size: 13px; color: #5c6b74; line-height: 1.5; }
-
-input[type="text"], input[type="tel"] {
-  width: 100%;
-  padding: 12px 14px;
-  border-radius: 10px;
-  border: 1px solid var(--line);
-  font-size: 14px;
-  background: #fff;
-  margin-top: 6px;
-  font-family: inherit;
-}
-
-input[type="file"] {
-  margin-top: 8px;
-  font-size: 13px;
-}
-
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 13px 18px;
-  border-radius: 12px;
-  border: none;
-  font-size: 14px;
-  font-weight: 700;
-  cursor: pointer;
-  width: 100%;
-  margin-top: 10px;
-  font-family: inherit;
-  transition: opacity 0.15s;
-}
-
-.btn:active { opacity: 0.85; }
-.btn-primary { background: var(--navy); color: #fff; }
-.btn-danger { background: var(--danger); color: #fff; }
-.btn-ghost { background: #eef2f4; color: var(--navy); }
-
-.tier {
-  display: inline-block;
-  padding: 3px 9px;
-  border-radius: 20px;
-  font-size: 11px;
-  font-weight: 700;
-}
-
-.tier-none { background: #e3f1e8; color: var(--safe); }
-.tier-low { background: var(--amber-soft); color: var(--amber); }
-.tier-high { background: #f5dcd6; color: var(--danger); }
-
-.result-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 0;
-  border-bottom: 1px solid var(--line);
-}
-
-.result-row:last-child { border-bottom: none; }
-
-.ring-wrap {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 14px;
-  padding: 10px 0 4px;
-}
-
-svg.ring { transform: rotate(-90deg); }
-
-.ring-time {
-  font-size: 28px;
-  font-weight: 700;
-  color: var(--navy);
-  font-family: Georgia, serif;
-}
-
-.ring-label { font-size: 12px; color: var(--slate); text-align: center; }
-
-.vault-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 0;
-  border-bottom: 1px solid var(--line);
-}
-
-.vault-item:last-child { border-bottom: none; }
-
-.vault-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  background: var(--mist);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 16px;
-  flex-shrink: 0;
-}
-
-.vault-meta { flex: 1; min-width: 0; }
-.vault-meta .name { font-size: 13.5px; font-weight: 600; color: var(--navy); }
-.vault-meta .date { font-size: 11px; color: var(--slate); }
-
-.lock-badge {
-  font-size: 10px;
-  color: var(--safe);
-  background: #e3f1e8;
-  padding: 2px 8px;
-  border-radius: 10px;
-  flex-shrink: 0;
-}
-
-.hidden { display: none !important; }
-
-.view {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-}
-
-.view.hidden { display: none !important; }
-
-/* Scrollbar styling */
-.content::-webkit-scrollbar { width: 4px; }
-.content::-webkit-scrollbar-track { background: transparent; }
-.content::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
-
-/* Focus states for accessibility */
-input:focus, button:focus {
-  outline: 2px solid var(--amber);
-  outline-offset: 2px;
-}
-
-button:focus:not(:focus-visible) {
-  outline: none;
-}
-
-/* Language Switcher */
-.topbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem;
-}
-
-.topbar-right {
-  display: flex;
-  align-items: center;
-}
-
-.lang-selector select {
-  background: rgba(255,255,255,0.1);
-  color: white;
-  border: 1px solid rgba(255,255,255,0.2);
-  border-radius: 8px;
-  padding: 6px 10px;
-  font-size: 14px;
-  cursor: pointer;
-}
-
-.lang-selector select option {
-  background: #1a2332;
-  color: white;
-}
-
-.topbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  padding: 1.5rem;
-}
-
-.topbar-left {
-  flex: 1;
-}
-
-.topbar-right {
-  margin-left: 1rem;
-}
-
-.lang-selector select {
-  background: rgba(255,255,255,0.1);
-  color: white;
-  border: 1px solid rgba(255,255,255,0.2);
-  border-radius: 8px;
-  padding: 6px 10px;
-  font-size: 14px;
-  cursor: pointer;
-}
-
-.lang-selector select option {
-  background: #1a2332;
-  color: white;
-}
-
-/* Check-in Map & Share Link */
-#mapContainer {
-  width: 100%;
-  height: 220px;
-  margin: 16px 0;
-  border-radius: 12px;
-  background: #e8eef2;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.share-link-card {
-  margin: 16px 0;
-  padding: 14px;
-  background: #f0f4f8;
-  border-radius: 12px;
-  border: 1px solid #dfe6ea;
-}
-
-.share-link-box {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
-.share-link-box input {
-  flex: 1;
-  font-size: 12px;
-  padding: 10px;
-  border: 1px solid #d0d8de;
-  border-radius: 8px;
-}
-
-/* Ring timer */
-.ring-wrap {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin: 20px 0;
-}
-
-.ring-time {
-  font-size: 32px;
-  font-weight: 700;
-  color: #1a2332;
-  margin-top: -90px;
-  margin-bottom: 60px;
-}
-
-.ring-label {
-  font-size: 13px;
-  color: #5c6b74;
-  margin-top: 8px;
-}
-
-/* iPhone-style Calculator */
-.calculator-container {
-  min-height: 100vh;
-  background: #000;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-end;
-  padding: 20px;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-}
-
-.calculator-body {
-  width: 100%;
-  max-width: 400px;
-}
-
-.calc-display {
-  color: #fff;
-  font-size: 64px;
-  font-weight: 300;
-  text-align: right;
-  padding: 20px 10px;
-  margin-bottom: 10px;
-  min-height: 80px;
-  word-break: break-all;
-}
-
-.calc-buttons {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.btn-row,
-.sci-row {
-  display: flex;
-  gap: 12px;
-  justify-content: space-between;
-}
-
-.calc-buttons button {
-  width: 70px;
-  height: 70px;
-  border-radius: 50%;
-  border: none;
-  font-size: 28px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: filter 0.1s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.calc-buttons button:active {
-  filter: brightness(1.3);
-}
-
-.btn-gray {
-  background: #a5a5a5;
-  color: #000;
-}
-
-.btn-dark {
-  background: #333;
-  color: #fff;
-}
-
-.btn-orange {
-  background: #ff9f0a;
-  color: #fff;
-}
-
-.btn-zero {
-  width: 154px;
-  border-radius: 35px;
-  justify-content: flex-start;
-  padding-left: 28px;
-}
-
-.btn-sci-toggle {
-  background: #a5a5a5;
-  color: #000;
-  font-size: 18px;
-}
-
-.btn-sci {
-  background: #2c2c2c;
-  color: #fff;
-  font-size: 18px;
-  width: 70px;
-  height: 50px;
-}
-
-.sci-row {
-  margin-bottom: 8px;
-}
-
-.calc-footer {
-  color: #333;
-  font-size: 12px;
-  text-align: center;
-  margin-top: 20px;
-}
-
-/* Responsive */
-@media (max-width: 400px) {
-  .calc-buttons button {
-    width: 65px;
-    height: 65px;
-    font-size: 24px;
+export type Operator = '+' | '-' | '*' | '/';
+
+export class Calculator {
+  private display = '0';
+  private expression = '';        // Full expression for display
+  private firstValue: number | null = null;
+  private operator: Operator | null = null;
+  private waitingForSecond = false;
+  private keyLog = '';           // Tracks ALL keys for PIN unlock
+  private container: HTMLElement;
+  private onUnlockAttempt: (keyLog: string) => Promise<boolean>;
+  private errorTimeout: ReturnType<typeof setTimeout> | null = null;
+  private displayEl: HTMLElement | null = null;
+  private isScientific = false;
+  private clickHandler: ((e: Event) => void) | null = null;
+  private isRadians = false;     // DEG by default
+
+  constructor(
+    app: HTMLElement,
+    onUnlockAttempt: (keyLog: string) => Promise<boolean>
+  ) {
+    this.container = app;
+    this.onUnlockAttempt = onUnlockAttempt;
+    this.render();
+    this.attachListeners();
   }
 
-  .btn-zero {
-    width: 142px;
+  // PUBLIC API
+
+  async input(key: string): Promise<void> {
+    if (this.errorTimeout) {
+      clearTimeout(this.errorTimeout);
+      this.errorTimeout = null;
+    }
+
+    switch (key) {
+      case 'C':
+        this.clear();
+        return;
+      case 'AC':
+        this.allClear();
+        return;
+      case '=':
+        await this.inputEquals();
+        return;
+      case 'SCI':
+        this.toggleScientific();
+        return;
+      case 'DEG':
+      case 'RAD':
+        this.toggleAngleMode();
+        return;
+      case 'DEL':
+        this.backspace();
+        return;
+      case 'INV':
+        // Toggle inverse functions - would need UI update
+        return;
+    }
+
+    if (['+', '-', '*', '/'].includes(key)) {
+      this.inputOperator(key as Operator);
+      return;
+    }
+
+    if (['sin', 'cos', 'tan', 'asin', 'acos', 'atan', 'log', 'ln', 'sqrt', 'cbrt', 'x2', 'x3', '1/x', 'pi', 'e', '%', 'pm', 'fact', '10x', 'ex', 'xy', 'abs'].includes(key)) {
+      this.inputScientific(key);
+      return;
+    }
+
+    if (/^[0-9.]$/.test(key)) {
+      this.inputDigit(key);
+      return;
+    }
   }
 
-  .calc-display {
-    font-size: 48px;
+  getDisplay(): string {
+    return this.display;
   }
-}
 
+  clear(): void {
+    this.display = '0';
+    this.expression = '';
+    this.firstValue = null;
+    this.operator = null;
+    this.waitingForSecond = false;
+    this.keyLog = '';
+    this.updateDisplay();
+  }
 
-/* Setup Wizard - iPhone Dark Theme */
-.setup-wizard {
-  min-height: 100vh;
-  background: #000;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  color: #fff;
-}
+  allClear(): void {
+    this.clear();
+  }
 
-.setup-card {
-  width: 100%;
-  max-width: 360px;
-  text-align: center;
-}
+  backspace(): void {
+    if (this.display.length > 1 && this.display !== 'Error') {
+      this.display = this.display.slice(0, -1);
+    } else {
+      this.display = '0';
+    }
+    this.updateDisplay();
+  }
 
-.setup-icon {
-  font-size: 64px;
-  margin-bottom: 24px;
-  animation: pulse 2s infinite;
-}
+  destroy(): void {
+    if (this.clickHandler) {
+      this.container.removeEventListener('click', this.clickHandler);
+    }
+    this.container.innerHTML = '';
+    if (this.errorTimeout) {
+      clearTimeout(this.errorTimeout);
+    }
+  }
 
-@keyframes pulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.1); }
-}
+  // UNLOCK LOGIC (SECURITY)
 
-.setup-card h1 {
-  font-size: 28px;
-  font-weight: 600;
-  margin-bottom: 12px;
-  letter-spacing: -0.5px;
-}
+  private async checkUnlock(): Promise<void> {
+    const normalized = this.normalizeKeyLog(this.keyLog);
+    console.log('DEBUG keyLog:', JSON.stringify(this.keyLog), 'normalized:', JSON.stringify(normalized));
 
-.setup-subtitle {
-  color: #8e8e93;
-  font-size: 16px;
-  line-height: 1.5;
-  margin-bottom: 32px;
-}
+    try {
+      const wasHandled = await this.onUnlockAttempt(normalized);
+      console.log('DEBUG onUnlockAttempt returned:', wasHandled);
 
-.pin-input-group {
-  margin-bottom: 20px;
-  text-align: left;
-}
+      if (!wasHandled && this.keyLog.length >= 12) {
+        console.log('DEBUG: Wrong code, showing Error');
+        this.display = 'Error';
+        this.updateDisplay();
+        this.errorTimeout = setTimeout(() => {
+          this.keyLog = '';
+          this.display = '0';
+          this.updateDisplay();
+        }, 800);
+      }
+    } catch (err) {
+      console.error('DEBUG checkUnlock error:', err);
+    }
+  }
 
-.pin-input-group label {
-  display: block;
-  color: #8e8e93;
-  font-size: 13px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 8px;
-}
+  private normalizeKeyLog(keyLog: string): string {
+    // Remove duplicate operators
+    return keyLog.replace(/([+\-*/=])\1+/g, '$1');
+  }
 
-.pin-input-group input {
-  width: 100%;
-  height: 56px;
-  background: #1c1c1e;
-  border: 1px solid #38383a;
-  border-radius: 12px;
-  color: #fff;
-  font-size: 24px;
-  text-align: center;
-  letter-spacing: 8px;
-  padding: 0 16px;
-  outline: none;
-  transition: border-color 0.2s;
-  box-sizing: border-box;
-}
+  // INPUT HANDLERS
 
-.pin-input-group input:focus {
-  border-color: #ff9f0a;
-}
+  private inputDigit(d: string): void {
+    if (this.waitingForSecond) {
+      this.display = d;
+      this.waitingForSecond = false;
+    } else {
+      if (d === '.' && this.display.includes('.')) return;
+      this.display = (this.display === '0' && d !== '.') ? d : this.display + d;
+    }
 
-.pin-input-group input::placeholder {
-  color: #48484a;
-  letter-spacing: 8px;
-}
+    this.keyLog += d;
+    this.checkUnlock();
+    this.updateDisplay();
+  }
 
-.setup-error {
-  color: #ff453a;
-  font-size: 14px;
-  min-height: 20px;
-  margin-bottom: 16px;
-}
+  private inputOperator(op: Operator): void {
+    const current = parseFloat(this.display);
 
-.setup-button {
-  width: 100%;
-  height: 56px;
-  background: #ff9f0a;
-  color: #000;
-  border: none;
-  border-radius: 12px;
-  font-size: 18px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-  margin-bottom: 24px;
-}
+    if (this.firstValue === null) {
+      this.firstValue = current;
+    } else if (this.operator && !this.waitingForSecond) {
+      const result = this.calculate(this.firstValue, current, this.operator);
+      this.display = this.formatResult(result);
+      this.firstValue = result;
+    } else {
+      this.firstValue = current;
+    }
 
-.setup-button:hover {
-  background: #ffb340;
-}
+    this.operator = op;
+    this.waitingForSecond = true;
+    this.keyLog += op;
+    this.checkUnlock();
+    this.updateDisplay();
+  }
 
-.setup-button:active {
-  transform: scale(0.98);
-}
+  private async inputEquals(): Promise<void> {
+    if (this.firstValue === null || this.operator === null) {
+      this.keyLog += '=';
+      await this.checkUnlock();
+      return;
+    }
 
-.setup-hint {
-  color: #8e8e93;
-  font-size: 14px;
-  line-height: 1.5;
-}
+    const secondValue = parseFloat(this.display);
+    const result = this.calculate(this.firstValue, secondValue, this.operator);
 
-/* PIN dots display */
-.pin-dots {
-  display: flex;
-  justify-content: center;
-  gap: 16px;
-  margin-bottom: 32px;
-}
+    this.display = this.formatResult(result);
+    this.firstValue = null;
+    this.operator = null;
+    this.waitingForSecond = true;
+    this.keyLog += '=';
+    await this.checkUnlock();
+    this.updateDisplay();
+  }
 
-.pin-dot {
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: #48484a;
-  transition: background 0.2s;
-}
+  private inputScientific(func: string): void {
+    const current = parseFloat(this.display);
+    let result = current;
+    const toRad = (deg: number) => deg * Math.PI / 180;
+    const toDeg = (rad: number) => rad * 180 / Math.PI;
 
-.pin-dot.filled {
-  background: #ff9f0a;
-}
+    switch (func) {
+      case 'sin':
+        result = this.isRadians ? Math.sin(current) : Math.sin(toRad(current));
+        break;
+      case 'cos':
+        result = this.isRadians ? Math.cos(current) : Math.cos(toRad(current));
+        break;
+      case 'tan':
+        result = this.isRadians ? Math.tan(current) : Math.tan(toRad(current));
+        break;
+      case 'asin':
+        result = this.isRadians ? Math.asin(current) : toDeg(Math.asin(current));
+        break;
+      case 'acos':
+        result = this.isRadians ? Math.acos(current) : toDeg(Math.acos(current));
+        break;
+      case 'atan':
+        result = this.isRadians ? Math.atan(current) : toDeg(Math.atan(current));
+        break;
+      case 'log':
+        result = Math.log10(current);
+        break;
+      case 'ln':
+        result = Math.log(current);
+        break;
+      case 'sqrt':
+        result = Math.sqrt(current);
+        break;
+      case 'cbrt':
+        result = Math.cbrt(current);
+        break;
+      case 'x2':
+        result = current * current;
+        break;
+      case 'x3':
+        result = current * current * current;
+        break;
+      case 'xy':
+        // Would need two operands - simplified
+        result = current;
+        break;
+      case '1/x':
+        result = 1 / current;
+        break;
+      case 'pi':
+        result = Math.PI;
+        break;
+      case 'e':
+        result = Math.E;
+        break;
+      case '%':
+        result = current / 100;
+        break;
+      case 'pm':
+        result = -current;
+        break;
+      case 'fact':
+        result = this.factorial(Math.floor(current));
+        break;
+      case '10x':
+        result = Math.pow(10, current);
+        break;
+      case 'ex':
+        result = Math.exp(current);
+        break;
+      case 'abs':
+        result = Math.abs(current);
+        break;
+    }
 
-/* Progress indicator */
-.setup-progress {
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-  margin-bottom: 32px;
-}
+    this.display = this.formatResult(result);
+    this.waitingForSecond = true;
+    this.updateDisplay();
+  }
 
-.setup-progress-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #48484a;
-}
+  private toggleScientific(): void {
+    this.isScientific = !this.isScientific;
+    this.render();
+    this.attachListeners();
+  }
 
-.setup-progress-dot.active {
-  background: #ff9f0a;
+  private toggleAngleMode(): void {
+    this.isRadians = !this.isRadians;
+    this.render();
+    this.attachListeners();
+  }
+
+  // CALCULATION
+
+  private calculate(a: number, b: number, op: Operator): number {
+    switch (op) {
+      case '+': return this.fixFloat(a + b);
+      case '-': return this.fixFloat(a - b);
+      case '*': return this.fixFloat(a * b);
+      case '/': return b !== 0 ? this.fixFloat(a / b) : NaN;
+      default: return b;
+    }
+  }
+
+  private fixFloat(n: number): number {
+    // Fix floating point precision issues
+    return Math.round(n * 1e12) / 1e12;
+  }
+
+  private formatResult(n: number): string {
+    if (isNaN(n)) return 'Error';
+    if (!isFinite(n)) return 'Error';
+
+    // Format to avoid long decimals
+    const str = n.toString();
+    if (str.length > 15) {
+      return n.toPrecision(12);
+    }
+    return str;
+  }
+
+  private factorial(n: number): number {
+    if (n < 0) return NaN;
+    if (n === 0 || n === 1) return 1;
+    let result = 1;
+    for (let i = 2; i <= n; i++) {
+      result *= i;
+    }
+    return result;
+  }
+
+  // RENDERING
+
+  private render(): void {
+    if (this.clickHandler) {
+      this.container.removeEventListener('click', this.clickHandler);
+      this.clickHandler = null;
+    }
+    this.container.innerHTML = '';
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'calculator-container';
+
+    const angleMode = this.isRadians ? 'RAD' : 'DEG';
+
+    // Scientific buttons (pill-shaped)
+    const scientificButtons = this.isScientific ? `
+      <div class="sci-row">
+        <button data-key="INV" class="btn-sci">INV</button>
+        <button data-key="DEG" class="btn-sci btn-active">${angleMode}</button>
+        <button data-key="fact" class="btn-sci">x!</button>
+        <button data-key="C" class="btn-clear">C</button>
+        <button data-key="%" class="btn-sci">%</button>
+        <button data-key="DEL" class="btn-sci">⌫</button>
+        <button data-key="/" class="btn-op">÷</button>
+      </div>
+      <div class="sci-row">
+        <button data-key="sin" class="btn-sci">sin</button>
+        <button data-key="cos" class="btn-sci">cos</button>
+        <button data-key="tan" class="btn-sci">tan</button>
+        <button data-key="7" class="btn-num">7</button>
+        <button data-key="8" class="btn-num">8</button>
+        <button data-key="9" class="btn-num">9</button>
+        <button data-key="*" class="btn-op">×</button>
+      </div>
+      <div class="sci-row">
+        <button data-key="ln" class="btn-sci">ln</button>
+        <button data-key="log" class="btn-sci">log</button>
+        <button data-key="xy" class="btn-sci">xʸ</button>
+        <button data-key="4" class="btn-num">4</button>
+        <button data-key="5" class="btn-num">5</button>
+        <button data-key="6" class="btn-num">6</button>
+        <button data-key="-" class="btn-op">−</button>
+      </div>
+      <div class="sci-row">
+        <button data-key="pi" class="btn-sci">π</button>
+        <button data-key="e" class="btn-sci">e</button>
+        <button data-key="sqrt" class="btn-sci">√</button>
+        <button data-key="1" class="btn-num">1</button>
+        <button data-key="2" class="btn-num">2</button>
+        <button data-key="3" class="btn-num">3</button>
+        <button data-key="+" class="btn-op">+</button>
+      </div>
+      <div class="sci-row">
+        <button data-key="10x" class="btn-sci">10ˣ</button>
+        <button data-key="ex" class="btn-sci">eˣ</button>
+        <button data-key="x2" class="btn-sci">x²</button>
+        <button data-key="pm" class="btn-sci">+/-</button>
+        <button data-key="0" class="btn-num">0</button>
+        <button data-key="." class="btn-num">.</button>
+        <button data-key="=" class="btn-equals">=</button>
+      </div>
+    ` : `
+      <div class="btn-row">
+        <button data-key="C" class="btn-clear">C</button>
+        <button data-key="%" class="btn-sci">%</button>
+        <button data-key="DEL" class="btn-sci">⌫</button>
+        <button data-key="/" class="btn-op">÷</button>
+      </div>
+      <div class="btn-row">
+        <button data-key="7" class="btn-num">7</button>
+        <button data-key="8" class="btn-num">8</button>
+        <button data-key="9" class="btn-num">9</button>
+        <button data-key="*" class="btn-op">×</button>
+      </div>
+      <div class="btn-row">
+        <button data-key="4" class="btn-num">4</button>
+        <button data-key="5" class="btn-num">5</button>
+        <button data-key="6" class="btn-num">6</button>
+        <button data-key="-" class="btn-op">−</button>
+      </div>
+      <div class="btn-row">
+        <button data-key="1" class="btn-num">1</button>
+        <button data-key="2" class="btn-num">2</button>
+        <button data-key="3" class="btn-num">3</button>
+        <button data-key="+" class="btn-op">+</button>
+      </div>
+      <div class="btn-row">
+        <button data-key="pm" class="btn-sci">+/-</button>
+        <button data-key="0" class="btn-num">0</button>
+        <button data-key="." class="btn-num">.</button>
+        <button data-key="=" class="btn-equals">=</button>
+      </div>
+    `;
+
+    wrapper.innerHTML = `
+      <div class="calculator-body">
+        <div class="calc-header">
+          <button data-key="SCI" class="btn-toggle">${this.isScientific ? 'BASIC' : 'SCI'}</button>
+          <div class="calc-icons">
+            <span class="icon">🕐</span>
+            <span class="icon">$</span>
+            <span class="icon">📏</span>
+          </div>
+        </div>
+        <div class="calc-display" id="calc-display">${this.display}</div>
+        <div class="calc-buttons ${this.isScientific ? 'scientific' : ''}">
+          ${scientificButtons}
+        </div>
+      </div>
+    `;
+
+    this.container.appendChild(wrapper);
+    this.displayEl = wrapper.querySelector('#calc-display');
+  }
+
+  private attachListeners(): void {
+    this.clickHandler = async (e: Event) => {
+      const target = e.target as HTMLElement;
+      const key = target.dataset.key;
+      if (key) await this.input(key);
+    };
+    this.container.addEventListener('click', this.clickHandler);
+  }
+
+  private updateDisplay(): void {
+    if (this.displayEl) {
+      this.displayEl.textContent = this.display;
+    }
+  }
 }
