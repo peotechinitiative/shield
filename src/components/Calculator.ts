@@ -60,7 +60,7 @@ export class Calculator {
 
   backspace(): void {
     if (this.waitingForSecond) return;
-    if (this.display.length > 1) {
+    if (this.display.length > 1 && this.display !== 'Error') {
       this.display = this.display.slice(0, -1);
     } else {
       this.display = '0';
@@ -78,7 +78,6 @@ export class Calculator {
     }
   }
 
-  /* UNLOCK LOGIC (SECURITY) */
   private async checkUnlock(): Promise<void> {
     const normalized = this.normalizeKeyLog(this.keyLog);
     try {
@@ -96,10 +95,9 @@ export class Calculator {
   }
 
   private normalizeKeyLog(keyLog: string): string {
-    return keyLog.replace(/([+\-*/=])+/g, '$1');
+    return keyLog.replace(/([+\-*/=])\1+/g, '$1');
   }
 
-  /* INPUT HANDLERS */
   private inputDigit(d: string): void {
     if (this.waitingForSecond) {
       this.display = d;
@@ -200,7 +198,6 @@ export class Calculator {
     this.attachListeners();
   }
 
-  /* CALCULATION */
   private calculate(a: number, b: number, op: Operator): number {
     switch (op) {
       case '+': return this.fixFloat(a + b);
@@ -234,7 +231,6 @@ export class Calculator {
     return result;
   }
 
-  /* RENDERING */
   private render(): void {
     if (this.clickHandler) {
       this.container.removeEventListener('click', this.clickHandler);
@@ -257,20 +253,20 @@ export class Calculator {
       <div class="sci-row">
         <button data-key="ln" class="btn-sci">ln</button>
         <button data-key="log" class="btn-sci">log</button>
-        <button data-key="sqrt" class="btn-sci">√</button>
-        <button data-key="x2" class="btn-sci">x²</button>
+        <button data-key="sqrt" class="btn-sci">&radic;</button>
+        <button data-key="x2" class="btn-sci">x&sup2;</button>
       </div>
       <div class="sci-row">
-        <button data-key="pi" class="btn-sci">π</button>
+        <button data-key="pi" class="btn-sci">&pi;</button>
         <button data-key="e" class="btn-sci">e</button>
         <button data-key="1/x" class="btn-sci">1/x</button>
         <button data-key="%" class="btn-sci">%</button>
       </div>
       <div class="sci-row">
-        <button data-key="pm" class="btn-sci">±</button>
+        <button data-key="pm" class="btn-sci">&plusmn;</button>
         <button data-key="abs" class="btn-sci">|x|</button>
         <button data-key="fact" class="btn-sci">n!</button>
-        <button data-key="10x" class="btn-sci">10ˣ</button>
+        <button data-key="10x" class="btn-sci">10&#x02E3;</button>
       </div>
     ` : '';
 
@@ -279,9 +275,9 @@ export class Calculator {
         <div class="calc-header">
           <button data-key="SCI" class="btn-toggle">${this.isScientific ? 'BASIC' : 'SCI'}</button>
           <div class="calc-icons">
-            <span class="icon">◷</span>
-            <span class="icon">📏</span>
-            <span class="icon">🕐</span>
+            <span class="icon">&#x25F7;</span>
+            <span class="icon">&#x1F4CF;</span>
+            <span class="icon">&#x1F550;</span>
           </div>
         </div>
         <div class="calc-display" id="calc-display">${this.display}</div>
@@ -289,21 +285,21 @@ export class Calculator {
           ${scientificButtons}
           <div class="btn-row">
             <button data-key="C" class="btn-clear">C</button>
-            <button data-key="DEL" class="btn-op">⌫</button>
+            <button data-key="DEL" class="btn-op">&#x232B;</button>
             <button data-key="%" class="btn-op">%</button>
-            <button data-key="/" class="btn-op">÷</button>
+            <button data-key="/" class="btn-op">&divide;</button>
           </div>
           <div class="btn-row">
             <button data-key="7" class="btn-num">7</button>
             <button data-key="8" class="btn-num">8</button>
             <button data-key="9" class="btn-num">9</button>
-            <button data-key="*" class="btn-op">×</button>
+            <button data-key="*" class="btn-op">&times;</button>
           </div>
           <div class="btn-row">
             <button data-key="4" class="btn-num">4</button>
             <button data-key="5" class="btn-num">5</button>
             <button data-key="6" class="btn-num">6</button>
-            <button data-key="-" class="btn-op">−</button>
+            <button data-key="-" class="btn-op">&minus;</button>
           </div>
           <div class="btn-row">
             <button data-key="1" class="btn-num">1</button>
