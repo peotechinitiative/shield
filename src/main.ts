@@ -1,18 +1,16 @@
 import { Calculator } from './components/Calculator';
-import { isFirstLaunch, savePIN, verifyPIN, hasPIN, resetPIN } from './utils/security';
+import { isFirstLaunch, savePIN, verifyPIN } from './utils/security';
 import './style.css';
 
 const app = document.getElementById('app')!;
 let calculator: Calculator | null = null;
 
-/* ── HOME PAGE (POST-UNLOCK) ── */
+/* ── HOME PAGE ── */
 function renderHome(): void {
   app.innerHTML = `
     <div class="home-bg">
       <div class="home-overlay"></div>
       <div class="home-content">
-
-        <!-- Header -->
         <header class="home-header">
           <div class="home-brand">
             <div class="home-logo">🛡️</div>
@@ -24,7 +22,6 @@ function renderHome(): void {
           <button id="lock-btn" class="home-lock" title="Lock App">🔒</button>
         </header>
 
-        <!-- Hero Status Card -->
         <section class="hero-card">
           <div class="hero-status">
             <div class="status-ring active">
@@ -55,7 +52,6 @@ function renderHome(): void {
           </div>
         </section>
 
-        <!-- Quick Actions Grid -->
         <section class="actions-section">
           <h3 class="section-title">Quick Actions</h3>
           <div class="actions-grid">
@@ -82,7 +78,6 @@ function renderHome(): void {
           </div>
         </section>
 
-        <!-- Recent Activity -->
         <section class="activity-section">
           <h3 class="section-title">Activity</h3>
           <div class="activity-list">
@@ -103,11 +98,9 @@ function renderHome(): void {
           </div>
         </section>
 
-        <!-- Bottom Spacer -->
         <div class="home-spacer"></div>
       </div>
 
-      <!-- Bottom Navigation -->
       <nav class="home-nav">
         <button class="nav-item active" data-tab="home">
           <span class="nav-icon">🏠</span>
@@ -196,21 +189,16 @@ function renderSetupWizard(): void {
         <div class="setup-icon">🔐</div>
         <h1>Create Your PIN</h1>
         <p class="setup-subtitle">Set a 4-digit PIN to unlock Shield. Disguise it as a calculator equation.</p>
-
         <div class="pin-input-group">
           <label>Enter PIN</label>
           <input type="password" id="pin1" maxlength="4" placeholder="••••" inputmode="numeric" pattern="[0-9]*">
         </div>
-
         <div class="pin-input-group">
           <label>Confirm PIN</label>
           <input type="password" id="pin2" maxlength="4" placeholder="••••" inputmode="numeric" pattern="[0-9]*">
         </div>
-
         <div class="setup-error" id="setup-error"></div>
-
         <button class="setup-button" id="setup-btn">Save PIN & Continue</button>
-
         <p class="setup-hint">Default unlock: <strong>2+4+6+8==</strong><br>You can change this later in settings.</p>
       </div>
     </div>
@@ -240,12 +228,10 @@ function renderSetupWizard(): void {
   });
 }
 
-/* ── UNLOCK / PIN ENTRY ── */
+/* ── CALCULATOR / UNLOCK ── */
 function renderCalculator(): void {
   app.innerHTML = '';
   calculator = new Calculator(app, async (keyLog: string) => {
-    console.log('DEBUG keyLog:', JSON.stringify(keyLog));
-
     if (isFirstLaunch()) {
       if (keyLog === '2+4+6+8=' || keyLog === '2+4+6+8==') {
         calculator?.destroy();
@@ -266,8 +252,4 @@ function renderCalculator(): void {
 }
 
 /* ── BOOT ── */
-if (isFirstLaunch()) {
-  renderCalculator();
-} else {
-  renderCalculator();
-}
+renderCalculator();
