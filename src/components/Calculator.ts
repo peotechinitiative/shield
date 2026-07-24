@@ -274,11 +274,6 @@ export class Calculator {
       <div class="calculator-body">
         <div class="calc-header">
           <button data-key="SCI" class="btn-toggle">${this.isScientific ? 'BASIC' : 'SCI'}</button>
-          <div class="calc-icons">
-            <span class="icon">&#x25F7;</span>
-            <span class="icon">&#x1F4CF;</span>
-            <span class="icon">&#x1F550;</span>
-          </div>
         </div>
         <div class="calc-display" id="calc-display">${this.display}</div>
         <div class="calc-buttons ${this.isScientific ? 'scientific' : ''}">
