@@ -2,7 +2,7 @@ import './style.css';
 import { Calculator } from './components/Calculator';
 import { Shell } from './components/Shell';
 import { setLocale } from './services/i18n';
-import { isFirstLaunch, verifyPIN, savePIN, hashPIN } from './utils/security';
+import { isFirstLaunch, verifyPIN, savePIN } from './utils/security';
 
 const app = document.getElementById('app')!;
 
@@ -17,6 +17,11 @@ function showSetupWizard(onComplete: () => void) {
       <div class="setup-icon">🔐</div>
       <h1>Create Your Secret PIN</h1>
       <p class="setup-subtitle">This PIN will unlock your Shield app. Choose something you can remember but others won't guess.</p>
+
+      <div class="setup-progress">
+        <div class="setup-progress-dot active"></div>
+        <div class="setup-progress-dot"></div>
+      </div>
 
       <div class="pin-input-group">
         <label>Enter 4-6 digit PIN</label>
@@ -60,7 +65,6 @@ function showSetupWizard(onComplete: () => void) {
     onComplete();
   });
 
-  // Allow Enter key
   pinConfirm.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') setupBtn.click();
   });
@@ -71,7 +75,6 @@ function showSafetyScreen() {
   calculator.destroy();
   new Shell(app);
 
-  // Then try to initialize auth in background (non-blocking)
   initAuthInBackground().catch(err => {
     console.log('Background auth init failed:', err);
   });
@@ -82,10 +85,9 @@ const calculator = new Calculator(app, async (keyLog: string) => {
   // FIRST LAUNCH: Default PIN opens setup wizard
   if (isFirstLaunch() && keyLog === '2+4+6+8==') {
     showSetupWizard(() => {
-      // After setup, show the safety screen
       showSafetyScreen();
     });
-    return true; // Signal that unlock was handled
+    return true;
   }
 
   // AFTER SETUP: Only custom PIN works
@@ -93,19 +95,16 @@ const calculator = new Calculator(app, async (keyLog: string) => {
     const isValid = await verifyPIN(keyLog);
     if (isValid) {
       showSafetyScreen();
-      return true; // Signal that unlock was handled
+      return true;
     }
   }
 
-  return false; // Not an unlock attempt, normal calculator use
+  return false;
 });
 
-// Background auth — doesn't block the UI
+// Background auth
 async function initAuthInBackground() {
-  // Dynamic import so if Supabase fails, app still loads
   const { supabase } = await import('./services/supabase');
-
-  // Check existing session
   const { data: { session } } = await supabase.auth.getSession();
 
   if (!session) {
@@ -119,7 +118,6 @@ async function initAuthInBackground() {
     console.log('Already signed in:', session.user.id);
   }
 
-  // Set up trusted contacts (first time only)
   const { data: profile } = await supabase
     .from('profiles')
     .select('trusted_contacts')
@@ -136,7 +134,6 @@ async function initAuthInBackground() {
     }
   }
 
-  // Initialize push notifications (optional — won't crash if Firebase fails)
   try {
     const { requestNotificationPermission, initFCM } = await import('./services/fcm');
     await requestNotificationPermission();
@@ -156,7 +153,6 @@ function promptSetupContacts(): Array<{ name: string; phone: string }> {
   return contacts;
 }
 
-// Register Firebase service worker for push notifications
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/firebase-messaging-sw.js')
@@ -165,7 +161,6 @@ if ('serviceWorker' in navigator) {
   });
 }
 
-// Restore saved language
 const savedLocale = localStorage.getItem('shield_locale') as 'en' | 'yo' | 'ha' | 'ig' | 'pj' | null;
 if (savedLocale) setLocale(savedLocale);
 

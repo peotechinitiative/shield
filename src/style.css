@@ -616,3 +616,161 @@ button:focus:not(:focus-visible) {
     font-size: 48px;
   }
 }
+
+
+/* Setup Wizard - iPhone Dark Theme */
+.setup-wizard {
+  min-height: 100vh;
+  background: #000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color: #fff;
+}
+
+.setup-card {
+  width: 100%;
+  max-width: 360px;
+  text-align: center;
+}
+
+.setup-icon {
+  font-size: 64px;
+  margin-bottom: 24px;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+.setup-card h1 {
+  font-size: 28px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  letter-spacing: -0.5px;
+}
+
+.setup-subtitle {
+  color: #8e8e93;
+  font-size: 16px;
+  line-height: 1.5;
+  margin-bottom: 32px;
+}
+
+.pin-input-group {
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.pin-input-group label {
+  display: block;
+  color: #8e8e93;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+
+.pin-input-group input {
+  width: 100%;
+  height: 56px;
+  background: #1c1c1e;
+  border: 1px solid #38383a;
+  border-radius: 12px;
+  color: #fff;
+  font-size: 24px;
+  text-align: center;
+  letter-spacing: 8px;
+  padding: 0 16px;
+  outline: none;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+
+.pin-input-group input:focus {
+  border-color: #ff9f0a;
+}
+
+.pin-input-group input::placeholder {
+  color: #48484a;
+  letter-spacing: 8px;
+}
+
+.setup-error {
+  color: #ff453a;
+  font-size: 14px;
+  min-height: 20px;
+  margin-bottom: 16px;
+}
+
+.setup-button {
+  width: 100%;
+  height: 56px;
+  background: #ff9f0a;
+  color: #000;
+  border: none;
+  border-radius: 12px;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-bottom: 24px;
+}
+
+.setup-button:hover {
+  background: #ffb340;
+}
+
+.setup-button:active {
+  transform: scale(0.98);
+}
+
+.setup-hint {
+  color: #8e8e93;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* PIN dots display */
+.pin-dots {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.pin-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #48484a;
+  transition: background 0.2s;
+}
+
+.pin-dot.filled {
+  background: #ff9f0a;
+}
+
+/* Progress indicator */
+.setup-progress {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 32px;
+}
+
+.setup-progress-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #48484a;
+}
+
+.setup-progress-dot.active {
+  background: #ff9f0a;
+}
