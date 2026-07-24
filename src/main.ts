@@ -1,167 +1,273 @@
-import './style.css';
 import { Calculator } from './components/Calculator';
-import { Shell } from './components/Shell';
-import { setLocale } from './services/i18n';
-import { isFirstLaunch, verifyPIN, savePIN } from './utils/security';
+import { isFirstLaunch, savePIN, verifyPIN, hasPIN, resetPIN } from './utils/security';
+import './style.css';
 
 const app = document.getElementById('app')!;
+let calculator: Calculator | null = null;
 
-// ── PIN SETUP WIZARD (first launch) ──
-function showSetupWizard(onComplete: () => void) {
-  app.innerHTML = '';
+/* ── HOME PAGE (POST-UNLOCK) ── */
+function renderHome(): void {
+  app.innerHTML = `
+    <div class="home-bg">
+      <div class="home-overlay"></div>
+      <div class="home-content">
 
-  const container = document.createElement('div');
-  container.className = 'setup-wizard';
-  container.innerHTML = `
-    <div class="setup-card">
-      <div class="setup-icon">🔐</div>
-      <h1>Create Your Secret PIN</h1>
-      <p class="setup-subtitle">This PIN will unlock your Shield app. Choose something you can remember but others won't guess.</p>
+        <!-- Header -->
+        <header class="home-header">
+          <div class="home-brand">
+            <div class="home-logo">🛡️</div>
+            <div>
+              <h1>SHIELD</h1>
+              <span>Personal Safety Companion</span>
+            </div>
+          </div>
+          <button id="lock-btn" class="home-lock" title="Lock App">🔒</button>
+        </header>
 
-      <div class="setup-progress">
-        <div class="setup-progress-dot active"></div>
-        <div class="setup-progress-dot"></div>
+        <!-- Hero Status Card -->
+        <section class="hero-card">
+          <div class="hero-status">
+            <div class="status-ring active">
+              <svg viewBox="0 0 36 36">
+                <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                <path class="circle-fg" stroke-dasharray="100, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+              </svg>
+              <div class="status-icon">✓</div>
+            </div>
+            <div class="status-text">
+              <h2>Protected</h2>
+              <p>Your safety network is active</p>
+            </div>
+          </div>
+          <div class="hero-meta">
+            <div class="meta-item">
+              <span class="meta-value">Active</span>
+              <span class="meta-label">Status</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-value" id="live-clock">--:--</span>
+              <span class="meta-label">Local Time</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-value">ON</span>
+              <span class="meta-label">Location</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Quick Actions Grid -->
+        <section class="actions-section">
+          <h3 class="section-title">Quick Actions</h3>
+          <div class="actions-grid">
+            <button class="action-card panic" data-action="panic">
+              <div class="action-icon">🚨</div>
+              <div class="action-label">Panic Alert</div>
+              <div class="action-desc">Send emergency signal</div>
+            </button>
+            <button class="action-card checkin" data-action="checkin">
+              <div class="action-icon">📍</div>
+              <div class="action-label">Check In</div>
+              <div class="action-desc">Share your location</div>
+            </button>
+            <button class="action-card contacts" data-action="contacts">
+              <div class="action-icon">👥</div>
+              <div class="action-label">Safe Circle</div>
+              <div class="action-desc">Manage contacts</div>
+            </button>
+            <button class="action-card resources" data-action="resources">
+              <div class="action-icon">📚</div>
+              <div class="action-label">Resources</div>
+              <div class="action-desc">Safety guides & help</div>
+            </button>
+          </div>
+        </section>
+
+        <!-- Recent Activity -->
+        <section class="activity-section">
+          <h3 class="section-title">Activity</h3>
+          <div class="activity-list">
+            <div class="activity-item">
+              <div class="activity-dot green"></div>
+              <div class="activity-info">
+                <p>App secured with PIN</p>
+                <span>Just now</span>
+              </div>
+            </div>
+            <div class="activity-item">
+              <div class="activity-dot blue"></div>
+              <div class="activity-info">
+                <p>Location services enabled</p>
+                <span>Just now</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Bottom Spacer -->
+        <div class="home-spacer"></div>
       </div>
 
-      <div class="pin-input-group">
-        <label>Enter 4-6 digit PIN</label>
-        <input type="password" id="pin-input" maxlength="6" inputmode="numeric" pattern="[0-9]*" placeholder="••••••" />
-      </div>
-
-      <div class="pin-input-group">
-        <label>Confirm PIN</label>
-        <input type="password" id="pin-confirm" maxlength="6" inputmode="numeric" pattern="[0-9]*" placeholder="••••••" />
-      </div>
-
-      <p id="setup-error" class="setup-error"></p>
-
-      <button id="setup-btn" class="setup-button">Save PIN & Continue</button>
-
-      <p class="setup-hint">💡 Tip: Use a PIN that looks like a normal calculation (e.g., 2+4+6+8=20)</p>
+      <!-- Bottom Navigation -->
+      <nav class="home-nav">
+        <button class="nav-item active" data-tab="home">
+          <span class="nav-icon">🏠</span>
+          <span>Home</span>
+        </button>
+        <button class="nav-item" data-tab="map">
+          <span class="nav-icon">🗺️</span>
+          <span>Map</span>
+        </button>
+        <button class="nav-item nav-panic" data-tab="panic">
+          <span class="nav-icon">🚨</span>
+        </button>
+        <button class="nav-item" data-tab="alerts">
+          <span class="nav-icon">🔔</span>
+          <span>Alerts</span>
+        </button>
+        <button class="nav-item" data-tab="settings">
+          <span class="nav-icon">⚙️</span>
+          <span>More</span>
+        </button>
+      </nav>
     </div>
   `;
 
-  app.appendChild(container);
-
-  const pinInput = container.querySelector('#pin-input') as HTMLInputElement;
-  const pinConfirm = container.querySelector('#pin-confirm') as HTMLInputElement;
-  const setupBtn = container.querySelector('#setup-btn') as HTMLButtonElement;
-  const errorEl = container.querySelector('#setup-error') as HTMLParagraphElement;
-
-  setupBtn.addEventListener('click', async () => {
-    const pin = pinInput.value.trim();
-    const confirm = pinConfirm.value.trim();
-
-    if (pin.length < 4) {
-      errorEl.textContent = 'PIN must be at least 4 digits';
-      return;
-    }
-    if (pin !== confirm) {
-      errorEl.textContent = 'PINs do not match';
-      return;
-    }
-
-    await savePIN(pin);
-    onComplete();
-  });
-
-  pinConfirm.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') setupBtn.click();
-  });
+  startClock();
+  attachHomeListeners();
 }
 
-// ── SAFETY SCREEN (after unlock) ──
-function showSafetyScreen() {
-  calculator.destroy();
-  new Shell(app);
-
-  initAuthInBackground().catch(err => {
-    console.log('Background auth init failed:', err);
-  });
+function startClock(): void {
+  const update = () => {
+    const el = document.getElementById('live-clock');
+    if (el) {
+      const now = new Date();
+      el.textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+  };
+  update();
+  setInterval(update, 1000);
 }
 
-// ── MAIN APP FLOW ──
-const calculator = new Calculator(app, async (keyLog: string) => {
-  // FIRST LAUNCH: Default PIN opens setup wizard
-  if (isFirstLaunch() && keyLog === '2+4+6+8==') {
-    showSetupWizard(() => {
-      showSafetyScreen();
+function attachHomeListeners(): void {
+  document.getElementById('lock-btn')?.addEventListener('click', () => {
+    renderCalculator();
+  });
+
+  document.querySelectorAll('.action-card').forEach(card => {
+    card.addEventListener('click', () => {
+      const action = (card as HTMLElement).dataset.action;
+      showToast(`${action?.toUpperCase()} activated`);
     });
-    return true;
-  }
+  });
 
-  // AFTER SETUP: Only custom PIN works
-  if (!isFirstLaunch()) {
-    const isValid = await verifyPIN(keyLog);
-    if (isValid) {
-      showSafetyScreen();
+  document.querySelectorAll('.nav-item').forEach(item => {
+    item.addEventListener('click', () => {
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      item.classList.add('active');
+      const tab = (item as HTMLElement).dataset.tab;
+      if (tab === 'panic') {
+        showToast('🚨 PANIC MODE — Hold to confirm');
+      }
+    });
+  });
+}
+
+function showToast(msg: string): void {
+  const existing = document.querySelector('.home-toast');
+  if (existing) existing.remove();
+
+  const toast = document.createElement('div');
+  toast.className = 'home-toast';
+  toast.textContent = msg;
+  document.body.appendChild(toast);
+
+  requestAnimationFrame(() => toast.classList.add('show'));
+  setTimeout(() => {
+    toast.classList.remove('show');
+    setTimeout(() => toast.remove(), 300);
+  }, 2500);
+}
+
+/* ── SETUP WIZARD ── */
+function renderSetupWizard(): void {
+  app.innerHTML = `
+    <div class="setup-wizard">
+      <div class="setup-card">
+        <div class="setup-icon">🔐</div>
+        <h1>Create Your PIN</h1>
+        <p class="setup-subtitle">Set a 4-digit PIN to unlock Shield. Disguise it as a calculator equation.</p>
+
+        <div class="pin-input-group">
+          <label>Enter PIN</label>
+          <input type="password" id="pin1" maxlength="4" placeholder="••••" inputmode="numeric" pattern="[0-9]*">
+        </div>
+
+        <div class="pin-input-group">
+          <label>Confirm PIN</label>
+          <input type="password" id="pin2" maxlength="4" placeholder="••••" inputmode="numeric" pattern="[0-9]*">
+        </div>
+
+        <div class="setup-error" id="setup-error"></div>
+
+        <button class="setup-button" id="setup-btn">Save PIN & Continue</button>
+
+        <p class="setup-hint">Default unlock: <strong>2+4+6+8==</strong><br>You can change this later in settings.</p>
+      </div>
+    </div>
+  `;
+
+  const btn = document.getElementById('setup-btn')!;
+  const pin1 = document.getElementById('pin1') as HTMLInputElement;
+  const pin2 = document.getElementById('pin2') as HTMLInputElement;
+  const error = document.getElementById('setup-error')!;
+
+  btn.addEventListener('click', async () => {
+    const p1 = pin1.value;
+    const p2 = pin2.value;
+
+    if (p1.length < 4 || p2.length < 4) {
+      error.textContent = 'PIN must be 4 digits';
+      return;
+    }
+    if (p1 !== p2) {
+      error.textContent = 'PINs do not match';
+      return;
+    }
+
+    await savePIN(p1);
+    showToast('PIN saved successfully');
+    renderHome();
+  });
+}
+
+/* ── UNLOCK / PIN ENTRY ── */
+function renderCalculator(): void {
+  app.innerHTML = '';
+  calculator = new Calculator(app, async (keyLog: string) => {
+    console.log('DEBUG keyLog:', JSON.stringify(keyLog));
+
+    if (isFirstLaunch()) {
+      if (keyLog === '2+4+6+8=' || keyLog === '2+4+6+8==') {
+        calculator?.destroy();
+        renderSetupWizard();
+        return true;
+      }
+      return false;
+    }
+
+    const ok = await verifyPIN(keyLog);
+    if (ok) {
+      calculator?.destroy();
+      renderHome();
       return true;
     }
-  }
-
-  return false;
-});
-
-// Background auth
-async function initAuthInBackground() {
-  const { supabase } = await import('./services/supabase');
-  const { data: { session } } = await supabase.auth.getSession();
-
-  if (!session) {
-    const { data, error } = await supabase.auth.signInAnonymously();
-    if (error) {
-      console.error('Auth error:', error);
-      return;
-    }
-    console.log('Signed in anonymously:', data.user?.id);
-  } else {
-    console.log('Already signed in:', session.user.id);
-  }
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('trusted_contacts')
-    .single();
-
-  if (!profile?.trusted_contacts || profile.trusted_contacts.length === 0) {
-    const contacts = promptSetupContacts();
-    if (contacts.length > 0) {
-      const { data: userData } = await supabase.auth.getUser();
-      await supabase
-        .from('profiles')
-        .update({ trusted_contacts: contacts })
-        .eq('id', userData.user?.id);
-    }
-  }
-
-  try {
-    const { requestNotificationPermission, initFCM } = await import('./services/fcm');
-    await requestNotificationPermission();
-    await initFCM();
-  } catch (fcmErr) {
-    console.log('Push notifications not available:', fcmErr);
-  }
-}
-
-function promptSetupContacts(): Array<{ name: string; phone: string }> {
-  const contacts = [];
-  const name1 = prompt('Enter your trusted contact name (e.g. Sister Tolu):');
-  if (name1) {
-    const phone1 = prompt('Enter their phone number (e.g. +2348012345678):');
-    if (phone1) contacts.push({ name: name1, phone: phone1 });
-  }
-  return contacts;
-}
-
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/firebase-messaging-sw.js')
-      .then(reg => console.log('FCM SW registered:', reg.scope))
-      .catch(err => console.log('SW registration failed:', err));
+    return false;
   });
 }
 
-const savedLocale = localStorage.getItem('shield_locale') as 'en' | 'yo' | 'ha' | 'ig' | 'pj' | null;
-if (savedLocale) setLocale(savedLocale);
-
-console.log('App initialized');
+/* ── BOOT ── */
+if (isFirstLaunch()) {
+  renderCalculator();
+} else {
+  renderCalculator();
+}

@@ -1,365 +1,273 @@
-/* Green Scientific Calculator Theme */
-.calculator-container {
-  min-height: 100vh;
-  background: #000;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-end;
-  padding: 16px;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  color: #fff;
+import { Calculator } from './components/Calculator';
+import { isFirstLaunch, savePIN, verifyPIN, hasPIN, resetPIN } from './utils/security';
+import './style.css';
+
+const app = document.getElementById('app')!;
+let calculator: Calculator | null = null;
+
+/* ── HOME PAGE (POST-UNLOCK) ── */
+function renderHome(): void {
+  app.innerHTML = `
+    <div class="home-bg">
+      <div class="home-overlay"></div>
+      <div class="home-content">
+
+        <!-- Header -->
+        <header class="home-header">
+          <div class="home-brand">
+            <div class="home-logo">🛡️</div>
+            <div>
+              <h1>SHIELD</h1>
+              <span>Personal Safety Companion</span>
+            </div>
+          </div>
+          <button id="lock-btn" class="home-lock" title="Lock App">🔒</button>
+        </header>
+
+        <!-- Hero Status Card -->
+        <section class="hero-card">
+          <div class="hero-status">
+            <div class="status-ring active">
+              <svg viewBox="0 0 36 36">
+                <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                <path class="circle-fg" stroke-dasharray="100, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+              </svg>
+              <div class="status-icon">✓</div>
+            </div>
+            <div class="status-text">
+              <h2>Protected</h2>
+              <p>Your safety network is active</p>
+            </div>
+          </div>
+          <div class="hero-meta">
+            <div class="meta-item">
+              <span class="meta-value">Active</span>
+              <span class="meta-label">Status</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-value" id="live-clock">--:--</span>
+              <span class="meta-label">Local Time</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-value">ON</span>
+              <span class="meta-label">Location</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Quick Actions Grid -->
+        <section class="actions-section">
+          <h3 class="section-title">Quick Actions</h3>
+          <div class="actions-grid">
+            <button class="action-card panic" data-action="panic">
+              <div class="action-icon">🚨</div>
+              <div class="action-label">Panic Alert</div>
+              <div class="action-desc">Send emergency signal</div>
+            </button>
+            <button class="action-card checkin" data-action="checkin">
+              <div class="action-icon">📍</div>
+              <div class="action-label">Check In</div>
+              <div class="action-desc">Share your location</div>
+            </button>
+            <button class="action-card contacts" data-action="contacts">
+              <div class="action-icon">👥</div>
+              <div class="action-label">Safe Circle</div>
+              <div class="action-desc">Manage contacts</div>
+            </button>
+            <button class="action-card resources" data-action="resources">
+              <div class="action-icon">📚</div>
+              <div class="action-label">Resources</div>
+              <div class="action-desc">Safety guides & help</div>
+            </button>
+          </div>
+        </section>
+
+        <!-- Recent Activity -->
+        <section class="activity-section">
+          <h3 class="section-title">Activity</h3>
+          <div class="activity-list">
+            <div class="activity-item">
+              <div class="activity-dot green"></div>
+              <div class="activity-info">
+                <p>App secured with PIN</p>
+                <span>Just now</span>
+              </div>
+            </div>
+            <div class="activity-item">
+              <div class="activity-dot blue"></div>
+              <div class="activity-info">
+                <p>Location services enabled</p>
+                <span>Just now</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Bottom Spacer -->
+        <div class="home-spacer"></div>
+      </div>
+
+      <!-- Bottom Navigation -->
+      <nav class="home-nav">
+        <button class="nav-item active" data-tab="home">
+          <span class="nav-icon">🏠</span>
+          <span>Home</span>
+        </button>
+        <button class="nav-item" data-tab="map">
+          <span class="nav-icon">🗺️</span>
+          <span>Map</span>
+        </button>
+        <button class="nav-item nav-panic" data-tab="panic">
+          <span class="nav-icon">🚨</span>
+        </button>
+        <button class="nav-item" data-tab="alerts">
+          <span class="nav-icon">🔔</span>
+          <span>Alerts</span>
+        </button>
+        <button class="nav-item" data-tab="settings">
+          <span class="nav-icon">⚙️</span>
+          <span>More</span>
+        </button>
+      </nav>
+    </div>
+  `;
+
+  startClock();
+  attachHomeListeners();
 }
 
-.calculator-body {
-  width: 100%;
-  max-width: 480px;
+function startClock(): void {
+  const update = () => {
+    const el = document.getElementById('live-clock');
+    if (el) {
+      const now = new Date();
+      el.textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+  };
+  update();
+  setInterval(update, 1000);
 }
 
-/* Header */
-.calc-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-  padding: 0 8px;
+function attachHomeListeners(): void {
+  document.getElementById('lock-btn')?.addEventListener('click', () => {
+    renderCalculator();
+  });
+
+  document.querySelectorAll('.action-card').forEach(card => {
+    card.addEventListener('click', () => {
+      const action = (card as HTMLElement).dataset.action;
+      showToast(`${action?.toUpperCase()} activated`);
+    });
+  });
+
+  document.querySelectorAll('.nav-item').forEach(item => {
+    item.addEventListener('click', () => {
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      item.classList.add('active');
+      const tab = (item as HTMLElement).dataset.tab;
+      if (tab === 'panic') {
+        showToast('🚨 PANIC MODE — Hold to confirm');
+      }
+    });
+  });
 }
 
-.btn-toggle {
-  background: transparent;
-  border: 1px solid #333;
-  color: #4ade80;
-  padding: 6px 14px;
-  border-radius: 20px;
-  font-size: 13px;
-  cursor: pointer;
+function showToast(msg: string): void {
+  const existing = document.querySelector('.home-toast');
+  if (existing) existing.remove();
+
+  const toast = document.createElement('div');
+  toast.className = 'home-toast';
+  toast.textContent = msg;
+  document.body.appendChild(toast);
+
+  requestAnimationFrame(() => toast.classList.add('show'));
+  setTimeout(() => {
+    toast.classList.remove('show');
+    setTimeout(() => toast.remove(), 300);
+  }, 2500);
 }
 
-.calc-icons {
-  display: flex;
-  gap: 16px;
-  font-size: 20px;
+/* ── SETUP WIZARD ── */
+function renderSetupWizard(): void {
+  app.innerHTML = `
+    <div class="setup-wizard">
+      <div class="setup-card">
+        <div class="setup-icon">🔐</div>
+        <h1>Create Your PIN</h1>
+        <p class="setup-subtitle">Set a 4-digit PIN to unlock Shield. Disguise it as a calculator equation.</p>
+
+        <div class="pin-input-group">
+          <label>Enter PIN</label>
+          <input type="password" id="pin1" maxlength="4" placeholder="••••" inputmode="numeric" pattern="[0-9]*">
+        </div>
+
+        <div class="pin-input-group">
+          <label>Confirm PIN</label>
+          <input type="password" id="pin2" maxlength="4" placeholder="••••" inputmode="numeric" pattern="[0-9]*">
+        </div>
+
+        <div class="setup-error" id="setup-error"></div>
+
+        <button class="setup-button" id="setup-btn">Save PIN & Continue</button>
+
+        <p class="setup-hint">Default unlock: <strong>2+4+6+8==</strong><br>You can change this later in settings.</p>
+      </div>
+    </div>
+  `;
+
+  const btn = document.getElementById('setup-btn')!;
+  const pin1 = document.getElementById('pin1') as HTMLInputElement;
+  const pin2 = document.getElementById('pin2') as HTMLInputElement;
+  const error = document.getElementById('setup-error')!;
+
+  btn.addEventListener('click', async () => {
+    const p1 = pin1.value;
+    const p2 = pin2.value;
+
+    if (p1.length < 4 || p2.length < 4) {
+      error.textContent = 'PIN must be 4 digits';
+      return;
+    }
+    if (p1 !== p2) {
+      error.textContent = 'PINs do not match';
+      return;
+    }
+
+    await savePIN(p1);
+    showToast('PIN saved successfully');
+    renderHome();
+  });
 }
 
-.calc-icons .icon {
-  opacity: 0.7;
-  cursor: pointer;
+/* ── UNLOCK / PIN ENTRY ── */
+function renderCalculator(): void {
+  app.innerHTML = '';
+  calculator = new Calculator(app, async (keyLog: string) => {
+    console.log('DEBUG keyLog:', JSON.stringify(keyLog));
+
+    if (isFirstLaunch()) {
+      if (keyLog === '2+4+6+8=' || keyLog === '2+4+6+8==') {
+        calculator?.destroy();
+        renderSetupWizard();
+        return true;
+      }
+      return false;
+    }
+
+    const ok = await verifyPIN(keyLog);
+    if (ok) {
+      calculator?.destroy();
+      renderHome();
+      return true;
+    }
+    return false;
+  });
 }
 
-/* Display */
-.calc-display {
-  color: #fff;
-  font-size: 52px;
-  font-weight: 300;
-  text-align: right;
-  padding: 16px 8px;
-  margin-bottom: 16px;
-  min-height: 70px;
-  word-break: break-all;
-  line-height: 1.2;
-}
-
-/* Buttons Container */
-.calc-buttons {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.btn-row,
-.sci-row {
-  display: flex;
-  gap: 10px;
-  justify-content: space-between;
-}
-
-/* Base button styles - pill shaped */
-.calc-buttons button {
-  height: 56px;
-  border-radius: 28px;
-  border: none;
-  font-size: 20px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.15s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex: 1;
-  min-width: 0;
-}
-
-.calc-buttons button:active {
-  transform: scale(0.96);
-  opacity: 0.8;
-}
-
-/* Number buttons - dark gray */
-.btn-num {
-  background: #1c1c1e;
-  color: #fff;
-}
-
-.btn-num:hover {
-  background: #2c2c2e;
-}
-
-/* Scientific function buttons - darker */
-.btn-sci {
-  background: #1c1c1e;
-  color: #4ade80;
-  font-size: 16px;
-}
-
-.btn-sci:hover {
-  background: #2c2c2e;
-}
-
-.btn-sci.btn-active {
-  background: #4ade80;
-  color: #000;
-}
-
-/* Clear button - red/orange */
-.btn-clear {
-  background: #1c1c1e;
-  color: #ff453a;
-  font-size: 22px;
-}
-
-.btn-clear:hover {
-  background: #2c2c2e;
-}
-
-/* Operator buttons - green accent */
-.btn-op {
-  background: #1c1c1e;
-  color: #4ade80;
-  font-size: 26px;
-}
-
-.btn-op:hover {
-  background: #2c2c2e;
-}
-
-/* Equals button - bright green */
-.btn-equals {
-  background: #22c55e;
-  color: #fff;
-  font-size: 28px;
-}
-
-.btn-equals:hover {
-  background: #16a34a;
-}
-
-/* Zero button wider */
-.btn-zero {
-  flex: 2.1;
-  justify-content: flex-start;
-  padding-left: 28px;
-}
-
-/* Scientific mode specific */
-.calc-buttons.scientific .sci-row {
-  margin-bottom: 2px;
-}
-
-.calc-buttons.scientific button {
-  height: 48px;
-  font-size: 15px;
-}
-
-/* Responsive */
-@media (max-width: 400px) {
-  .calc-display {
-    font-size: 40px;
-  }
-
-  .calc-buttons button {
-    height: 50px;
-    font-size: 18px;
-  }
-
-  .calc-buttons.scientific button {
-    height: 42px;
-    font-size: 13px;
-  }
-}
-
-/* Setup Wizard - matching green theme */
-.setup-wizard {
-  min-height: 100vh;
-  background: #000;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  color: #fff;
-}
-
-.setup-card {
-  width: 100%;
-  max-width: 360px;
-  text-align: center;
-}
-
-.setup-icon {
-  font-size: 64px;
-  margin-bottom: 24px;
-  animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.1); }
-}
-
-.setup-card h1 {
-  font-size: 28px;
-  font-weight: 600;
-  margin-bottom: 12px;
-}
-
-.setup-subtitle {
-  color: #8e8e93;
-  font-size: 16px;
-  line-height: 1.5;
-  margin-bottom: 32px;
-}
-
-.pin-input-group {
-  margin-bottom: 20px;
-  text-align: left;
-}
-
-.pin-input-group label {
-  display: block;
-  color: #8e8e93;
-  font-size: 13px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 8px;
-}
-
-.pin-input-group input {
-  width: 100%;
-  height: 56px;
-  background: #1c1c1e;
-  border: 1px solid #38383a;
-  border-radius: 28px;
-  color: #fff;
-  font-size: 24px;
-  text-align: center;
-  letter-spacing: 12px;
-  padding: 0 16px;
-  outline: none;
-  transition: border-color 0.2s;
-  box-sizing: border-box;
-}
-
-.pin-input-group input:focus {
-  border-color: #22c55e;
-}
-
-.pin-input-group input::placeholder {
-  color: #48484a;
-  letter-spacing: 12px;
-}
-
-.setup-error {
-  color: #ff453a;
-  font-size: 14px;
-  min-height: 20px;
-  margin-bottom: 16px;
-}
-
-.setup-button {
-  width: 100%;
-  height: 56px;
-  background: #22c55e;
-  color: #000;
-  border: none;
-  border-radius: 28px;
-  font-size: 18px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-  margin-bottom: 24px;
-}
-
-.setup-button:hover {
-  background: #16a34a;
-}
-
-.setup-button:active {
-  transform: scale(0.98);
-}
-
-.setup-hint {
-  color: #8e8e93;
-  font-size: 14px;
-  line-height: 1.5;
-}
-
-/* Shell / App Views */
-#app {
-  min-height: 100vh;
-  background: #000;
-  color: #fff;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-}
-
-.view {
-  padding: 20px;
-  max-width: 480px;
-  margin: 0 auto;
-}
-
-.view h2 {
-  color: #22c55e;
-  font-size: 24px;
-  margin-bottom: 16px;
-}
-
-.view p {
-  color: #8e8e93;
-  line-height: 1.5;
-}
-
-/* Bottom nav */
-.bottom-nav {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: #111;
-  border-top: 1px solid #222;
-  display: flex;
-  justify-content: space-around;
-  padding: 12px 0;
-  z-index: 100;
-}
-
-.bottom-nav button {
-  background: none;
-  border: none;
-  color: #8e8e93;
-  font-size: 12px;
-  cursor: pointer;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-}
-
-.bottom-nav button.active {
-  color: #22c55e;
-}
-
-/* Utility */
-.hidden {
-  display: none !important;
+/* ── BOOT ── */
+if (isFirstLaunch()) {
+  renderCalculator();
+} else {
+  renderCalculator();
 }
