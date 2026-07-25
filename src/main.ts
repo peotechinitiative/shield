@@ -1,6 +1,5 @@
 import './style.css';
 
-// ===================== TYPES =====================
 export type ViewName = 'home' | 'checkin' | 'lookup' | 'vault' | 'playbook' | 'panic' | 'map' | 'alerts' | 'more' | 'setup' | 'pin' | 'calculator' | 'vaultList' | 'vaultHome' | 'vaultAdd' | 'settings' | 'antitheft' | 'safeCircle' | 'resources';
 
 export interface VaultItem {
@@ -11,15 +10,8 @@ export interface VaultItem {
   date: string;
 }
 
-export interface GeoPosition {
-  lat: number;
-  lng: number;
-  accuracy: number;
-}
-
 export type Lang = 'en' | 'pg' | 'ha' | 'yo' | 'ig' | 'fr';
 
-// ===================== I18N =====================
 const i18n: Record<Lang, Record<string, string>> = {
   en: {
     setupTitle: 'Shield Setup', setupSubtitle: 'Configure your safety preferences',
@@ -39,10 +31,16 @@ const i18n: Record<Lang, Record<string, string>> = {
     noteSaved: 'Note saved to vault', docSaved: 'Document saved to vault', deleted: 'Deleted',
     alertsCleared: 'Alerts cleared', shareCancelled: 'Share cancelled', noContact: 'No trusted contact set',
     panicBtn: 'Panic', checkInBtn: 'Check-In', vaultBtn: 'Vault', moreBtn: 'More',
-    protected: 'Protected', status: 'Status', activity: 'Recent Activity', quickNotes: 'Quick Notes',
+    protected: 'Protected', status: 'Status', activity: 'Activity', quickNotes: 'Quick Notes',
     add: 'Add', view: 'View', location: 'Location', share: 'Share', clear: 'Clear',
     comingSoon: 'Coming Soon', close: 'Close', duressPin: 'Duress PIN',
     duressDesc: 'Enter this PIN to silently alert trusted contact',
+    panicAlert: 'Panic Alert', checkInLabel: 'Check In', safeCircleLabel: 'Safe Circle',
+    resourcesLabel: 'Resources', panicSub: 'Send emergency signal', checkInSub: 'Share your location',
+    safeCircleSub: 'Manage contacts', resourcesSub: 'Safety guides & help',
+    announcements: 'Announcements', resetPin: 'Reset PIN', secretVault: 'Secret Vault',
+    antiTheftSettings: 'Anti-Theft Settings', aboutShield: 'About Shield',
+    version: 'Version 2.0.0', aboutDesc: 'A personal safety companion disguised as a calculator. Built for everyone.',
   },
   pg: {
     setupTitle: 'Shield Setup', setupSubtitle: 'Set your safety settings',
@@ -62,10 +60,16 @@ const i18n: Record<Lang, Record<string, string>> = {
     noteSaved: 'Note don save', docSaved: 'File don save', deleted: 'Don delete',
     alertsCleared: 'Alerts don clear', shareCancelled: 'Share cancel', noContact: 'No trusted person',
     panicBtn: 'Panic', checkInBtn: 'Check-In', vaultBtn: 'Vault', moreBtn: 'More',
-    protected: 'Protected', status: 'Status', activity: 'Wetin happen recently', quickNotes: 'Quick Notes',
+    protected: 'Protected', status: 'Status', activity: 'Wetin happen', quickNotes: 'Quick Notes',
     add: 'Add', view: 'View', location: 'Location', share: 'Share', clear: 'Clear',
     comingSoon: 'Coming Soon', close: 'Close', duressPin: 'Duress PIN',
     duressDesc: 'Use this PIN if person force you',
+    panicAlert: 'Panic Alert', checkInLabel: 'Check In', safeCircleLabel: 'Safe Circle',
+    resourcesLabel: 'Resources', panicSub: 'Send emergency signal', checkInSub: 'Share your location',
+    safeCircleSub: 'Manage contacts', resourcesSub: 'Safety guides & help',
+    announcements: 'Announcements', resetPin: 'Reset PIN', secretVault: 'Secret Vault',
+    antiTheftSettings: 'Anti-Theft Settings', aboutShield: 'About Shield',
+    version: 'Version 2.0.0', aboutDesc: 'A personal safety companion disguised as a calculator. Built for everyone.',
   },
   ha: {
     setupTitle: 'Shield Saita', setupSubtitle: 'Saita tsaronku',
@@ -89,6 +93,12 @@ const i18n: Record<Lang, Record<string, string>> = {
     add: 'Ƙara', view: 'Duba', location: 'Wuri', share: 'Tura', clear: 'Share',
     comingSoon: 'Zan zo', close: 'Rufe', duressPin: 'Duress PIN',
     duressDesc: 'Shigar da wannan PIN idan an taka maka kai',
+    panicAlert: 'Panic Alert', checkInLabel: 'Check In', safeCircleLabel: 'Safe Circle',
+    resourcesLabel: 'Resources', panicSub: 'Send emergency signal', checkInSub: 'Share your location',
+    safeCircleSub: 'Manage contacts', resourcesSub: 'Safety guides & help',
+    announcements: 'Announcements', resetPin: 'Reset PIN', secretVault: 'Secret Vault',
+    antiTheftSettings: 'Anti-Theft Settings', aboutShield: 'About Shield',
+    version: 'Version 2.0.0', aboutDesc: 'A personal safety companion disguised as a calculator. Built for everyone.',
   },
   yo: {
     setupTitle: 'Shield Ifowosowopo', setupSubtitle: 'Seto aabo re',
@@ -112,6 +122,12 @@ const i18n: Record<Lang, Record<string, string>> = {
     add: 'Fi kun', view: 'Wo', location: 'Ipo', share: 'Pin', clear: 'Paare',
     comingSoon: 'Yoo wa laipe', close: 'Pa', duressPin: 'Duress PIN',
     duressDesc: 'Lo PIN yi ti o ba ni idiju',
+    panicAlert: 'Panic Alert', checkInLabel: 'Check In', safeCircleLabel: 'Safe Circle',
+    resourcesLabel: 'Resources', panicSub: 'Send emergency signal', checkInSub: 'Share your location',
+    safeCircleSub: 'Manage contacts', resourcesSub: 'Safety guides & help',
+    announcements: 'Announcements', resetPin: 'Reset PIN', secretVault: 'Secret Vault',
+    antiTheftSettings: 'Anti-Theft Settings', aboutShield: 'About Shield',
+    version: 'Version 2.0.0', aboutDesc: 'A personal safety companion disguised as a calculator. Built for everyone.',
   },
   ig: {
     setupTitle: 'Shield Nhazi', setupSubtitle: 'Hazie nchebe gi',
@@ -135,6 +151,12 @@ const i18n: Record<Lang, Record<string, string>> = {
     add: 'Tinye', view: 'Le', location: 'Ebe', share: 'Zipu', clear: 'Hichapu',
     comingSoon: 'Na abia', close: 'Mechie', duressPin: 'Duress PIN',
     duressDesc: 'Jiri PIN a ma ihe ike merenu',
+    panicAlert: 'Panic Alert', checkInLabel: 'Check In', safeCircleLabel: 'Safe Circle',
+    resourcesLabel: 'Resources', panicSub: 'Send emergency signal', checkInSub: 'Share your location',
+    safeCircleSub: 'Manage contacts', resourcesSub: 'Safety guides & help',
+    announcements: 'Announcements', resetPin: 'Reset PIN', secretVault: 'Secret Vault',
+    antiTheftSettings: 'Anti-Theft Settings', aboutShield: 'About Shield',
+    version: 'Version 2.0.0', aboutDesc: 'A personal safety companion disguised as a calculator. Built for everyone.',
   },
   fr: {
     setupTitle: 'Configuration Shield', setupSubtitle: 'Configurez vos preferences de securite',
@@ -144,13 +166,13 @@ const i18n: Record<Lang, Record<string, string>> = {
     vaultDecrypt: 'Voir', vaultDelete: 'Supprimer', vaultBack: 'Retour au Coffre',
     vaultAddPhoto: 'Ajouter Photo', vaultAddNote: 'Ajouter Note', vaultAddDoc: 'Ajouter Document',
     save: 'Enregistrer', cancel: 'Annuler', trustedContact: 'Contact de Confiance',
-    trustedDesc: 'Numero pour alertes d\'urgence', saveContact: 'Sauver',
+    trustedDesc: "Numero pour alertes d'urgence", saveContact: 'Sauver',
     autoLocation: 'Partage Auto', findPhone: 'Trouver mon Tel', antiTheft: 'Anti-Vol',
     lastLocation: 'Derniere Position', alerts: 'Alertes', home: 'Accueil', map: 'Carte', more: 'Plus',
     safeCircle: 'Cercle de Securite', resources: 'Ressources', playbook: 'Guide', settings: 'Parametres',
-    note1: 'Vos donnees restent sur cet appareil.', note2: 'Ajoutez des contacts d\'urgence.',
+    note1: 'Vos donnees restent sur cet appareil.', note2: "Ajoutez des contacts d'urgence.",
     panicSent: 'Alerte envoyee', shareLoc: 'Partager Position', locUnavailable: 'Position indisponible',
-    setContactFirst: 'Definissez un contact d\'abord', photoSaved: 'Photo enregistree',
+    setContactFirst: "Definissez un contact d'abord", photoSaved: 'Photo enregistree',
     noteSaved: 'Note enregistree', docSaved: 'Document enregistre', deleted: 'Supprime',
     alertsCleared: 'Alertes effacees', shareCancelled: 'Partage annule', noContact: 'Aucun contact defini',
     panicBtn: 'Alerte', checkInBtn: 'Signaler', vaultBtn: 'Coffre', moreBtn: 'Plus',
@@ -158,6 +180,12 @@ const i18n: Record<Lang, Record<string, string>> = {
     add: 'Ajouter', view: 'Voir', location: 'Position', share: 'Partager', clear: 'Effacer',
     comingSoon: 'Bientot', close: 'Fermer', duressPin: 'PIN de Detresse',
     duressDesc: 'Utilisez ce PIN en cas de contrainte',
+    panicAlert: 'Panic Alert', checkInLabel: 'Check In', safeCircleLabel: 'Safe Circle',
+    resourcesLabel: 'Resources', panicSub: 'Send emergency signal', checkInSub: 'Share your location',
+    safeCircleSub: 'Manage contacts', resourcesSub: 'Safety guides & help',
+    announcements: 'Annonces', resetPin: 'Reinitialiser PIN', secretVault: 'Coffre Secret',
+    antiTheftSettings: 'Parametres Anti-Vol', aboutShield: 'A Propos de Shield',
+    version: 'Version 2.0.0', aboutDesc: 'Un compagnon de securite personnel deguise en calculatrice. Construit pour tous.',
   }
 };
 
@@ -166,7 +194,6 @@ function t(key: string): string {
   return i18n[currentLang][key] || i18n['en'][key] || key;
 }
 
-// ===================== CONSTANTS =====================
 const PIN_KEY = 'shield_pin_v2';
 const DURESS_PIN_KEY = 'shield_duress_v2';
 const VAULT_KEY = 'shield_vault_v2';
@@ -177,13 +204,11 @@ const LAST_LOCATION_KEY = 'shield_last_loc_v2';
 const SETUP_DONE_KEY = 'shield_setup_v2';
 const LANG_KEY = 'shield_lang_v2';
 
-// ===================== STATE =====================
 let currentView: ViewName = 'home';
 let pinBuffer = '';
 let pinTarget: 'unlock' | 'vault' | 'duress' = 'unlock';
 let pinCallback: (() => void) | null = null;
 
-// ===================== UTILS =====================
 function hashPin(pin: string): string {
   let h = 0;
   for (let i = 0; i < pin.length; i++) h = ((h << 5) - h) + pin.charCodeAt(i);
@@ -257,42 +282,32 @@ function getAlerts(): AlertItem[] {
 
 function logAlert(type: AlertItem['type'], message: string): void {
   const alerts = getAlerts();
-  alerts.unshift({
-    id: Date.now().toString(),
-    type,
-    message,
-    time: new Date().toLocaleString()
-  });
+  alerts.unshift({ id: Date.now().toString(), type, message, time: new Date().toLocaleString() });
   localStorage.setItem(ALERTS_KEY, JSON.stringify(alerts.slice(0, 50)));
 }
 
-// ===================== DOM =====================
+function getCurrentTime(): string {
+  return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+
 const app = document.getElementById('app')!;
 
-// ===================== VIEW SHELL =====================
-function viewShell(content: string, activeNav?: string): string {
-  const navItems = [
-    { id: 'home', icon: '\u2302', label: t('home') },
-    { id: 'map', icon: '\u26F3', label: t('map') },
+function bottomNav(activeNav: string): string {
+  const items = [
+    { id: 'home', icon: '\u1F3E0', label: t('home') },
+    { id: 'map', icon: '\u1F5FA', label: t('map') },
     { id: 'panic', icon: '\u1F6A8', label: t('panicBtn'), special: true },
     { id: 'alerts', icon: '\u1F514', label: t('alerts') },
-    { id: 'more', icon: '\u22EE', label: t('more') },
+    { id: 'more', icon: '\u2699', label: t('more') },
   ];
-  const navHtml = navItems.map(n => {
-    const active = n.id === activeNav ? 'active' : '';
-    const cls = n.special ? 'nav-panic' : `nav-item ${active}`;
+  return items.map(n => {
+    const isActive = n.id === activeNav ? 'active' : '';
+    const cls = n.special ? 'nav-panic' : `nav-item ${isActive}`;
     const inner = n.special
       ? `<span class="nav-icon">${n.icon}</span>`
       : `<span class="nav-icon">${n.icon}</span><span class="nav-label">${n.label}</span>`;
     return `<button class="${cls}" data-nav="${n.id}">${inner}</button>`;
   }).join('');
-
-  return `
-    <div class="view-page ${activeNav || ''}">
-      <div class="view-content">${content}</div>
-      <nav class="home-nav">${navHtml}</nav>
-    </div>
-  `;
 }
 
 function attachNavListeners(): void {
@@ -308,7 +323,6 @@ function attachNavListeners(): void {
   });
 }
 
-// ===================== ROUTER =====================
 function showView(view: ViewName): void {
   currentView = view;
   switch (view) {
@@ -333,20 +347,20 @@ function showView(view: ViewName): void {
   }
 }
 
-// ===================== SETUP =====================
 function renderSetup(): void {
   app.innerHTML = `
     <div class="setup-wizard">
       <div class="setup-card">
-        <h1>\u1F6E1 ${t('setupTitle')}</h1>
+        <div class="setup-shield">\u1F6E1</div>
+        <h1>${t('setupTitle')}</h1>
         <p>${t('setupSubtitle')}</p>
         <div class="setup-field">
           <label>${t('createPin')}</label>
-          <input type="password" id="setup-pin" maxlength="6" placeholder="****" />
+          <input type="password" id="setup-pin" maxlength="6" placeholder="****" inputmode="numeric" />
         </div>
         <div class="setup-field">
           <label>${t('confirmPin')}</label>
-          <input type="password" id="setup-pin2" maxlength="6" placeholder="****" />
+          <input type="password" id="setup-pin2" maxlength="6" placeholder="****" inputmode="numeric" />
         </div>
         <div class="setup-field">
           <label>${t('trustedContact')}</label>
@@ -382,15 +396,15 @@ function renderSetup(): void {
     localStorage.setItem(LANG_KEY, lang);
     currentLang = lang;
     localStorage.setItem(SETUP_DONE_KEY, '1');
+    logAlert('system', 'App secured with PIN');
     showView('home');
   });
 }
 
-// ===================== PIN ENTRY =====================
 function renderPin(): void {
   app.innerHTML = `
     <div class="pin-screen">
-      <div class="pin-ring"></div>
+      <div class="pin-shield">\u1F6E1</div>
       <h2>${t('enterPin')}</h2>
       <div class="pin-dots" id="pin-dots"></div>
       <div class="pin-pad">
@@ -439,58 +453,118 @@ function requirePin(callback: () => void, target: 'unlock' | 'vault' | 'duress' 
   showView('pin');
 }
 
-// ===================== HOME =====================
 function renderHome(): void {
   const contact = getTrustedContact();
-  const statusDot = contact ? '<span class="status-dot online"></span>' : '<span class="status-dot offline"></span>';
   const statusText = contact ? t('protected') : t('setContactFirst');
+  const alerts = getAlerts();
 
-  app.innerHTML = viewShell(`
-    <div class="home-content">
-      <div class="hero-card">
-        <div class="status-ring">
-          <svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" class="ring-bg"/><circle cx="50" cy="50" r="45" class="ring-progress"/></svg>
-          <div class="status-icon">\u2714</div>
+  app.innerHTML = `
+    <div class="view-page home-view">
+      <div class="view-content">
+        <div class="app-header">
+          <div class="header-brand">
+            <span class="header-icon">\u1F6E1</span>
+            <div class="header-text">
+              <div class="header-title">SHIELD</div>
+              <div class="header-subtitle">Personal Safety Companion</div>
+            </div>
+          </div>
+          <button class="header-lock" id="header-lock-btn">\u1F512</button>
         </div>
-        <h1 class="hero-title">SHIELD</h1>
-        <p class="hero-subtitle">${statusDot} ${statusText}</p>
-      </div>
-      <div class="actions-grid">
-        <button class="action-btn" data-action="panic"><span class="action-icon">\u1F6A8</span><span>${t('panicBtn')}</span></button>
-        <button class="action-btn" data-action="checkin"><span class="action-icon">\u1F4CD</span><span>${t('checkIn')}</span></button>
-        <button class="action-btn" data-action="vault"><span class="action-icon">\u1F510</span><span>${t('vaultBtn')}</span></button>
-        <button class="action-btn" data-action="playbook"><span class="action-icon">\u1F4D6</span><span>${t('playbook')}</span></button>
-      </div>
-      <div class="activity-section">
-        <h3>${t('activity')}</h3>
-        <div class="activity-list">
-          ${getAlerts().slice(0, 3).map(a => {
-            const color = a.type === 'panic' ? '#ef4444' : a.type === 'checkin' ? '#22c55e' : '#3b82f6';
-            return `<div class="activity-item"><div class="activity-dot" style="background:${color}"></div><div class="activity-info"><p>${a.message}</p><span>${a.time}</span></div></div>`;
-          }).join('') || `<div class="activity-empty">${t('note2')}</div>`}
+
+        <div class="hero-card">
+          <div class="hero-main">
+            <div class="status-ring">
+              <svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="42" class="ring-bg"/><circle cx="50" cy="50" r="42" class="ring-progress"/></svg>
+              <div class="status-icon">\u2714</div>
+            </div>
+            <div class="hero-text">
+              <h2>${statusText}</h2>
+              <p>Your safety network is active</p>
+            </div>
+          </div>
+          <div class="hero-metrics">
+            <div class="metric"><span class="metric-val" style="color:#22c55e">Active</span><span class="metric-label">${t('status')}</span></div>
+            <div class="metric"><span class="metric-val" style="color:#22c55e" id="hero-time">${getCurrentTime()}</span><span class="metric-label">LOCAL TIME</span></div>
+            <div class="metric"><span class="metric-val" style="color:#22c55e">ON</span><span class="metric-label">${t('location')}</span></div>
+          </div>
+        </div>
+
+        <div class="quick-actions">
+          <h3 class="section-title">Quick Actions</h3>
+          <div class="actions-grid">
+            <button class="action-card" data-action="panic">
+              <span class="action-icon">\u1F6A8</span>
+              <span class="action-title">${t('panicAlert')}</span>
+              <span class="action-sub">${t('panicSub')}</span>
+            </button>
+            <button class="action-card" data-action="checkin">
+              <span class="action-icon">\u1F4CD</span>
+              <span class="action-title">${t('checkInLabel')}</span>
+              <span class="action-sub">${t('checkInSub')}</span>
+            </button>
+            <button class="action-card" data-action="safeCircle">
+              <span class="action-icon">\u1F465</span>
+              <span class="action-title">${t('safeCircleLabel')}</span>
+              <span class="action-sub">${t('safeCircleSub')}</span>
+            </button>
+            <button class="action-card" data-action="resources">
+              <span class="action-icon">\u1F4DA</span>
+              <span class="action-title">${t('resourcesLabel')}</span>
+              <span class="action-sub">${t('resourcesSub')}</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="activity-section">
+          <h3 class="section-title">${t('activity')}</h3>
+          <div class="activity-list">
+            ${alerts.length > 0 ? alerts.slice(0, 3).map(a => {
+              const color = a.type === 'panic' ? '#22c55e' : a.type === 'checkin' ? '#3b82f6' : '#22c55e';
+              return `<div class="activity-row"><div class="activity-dot" style="background:${color};box-shadow:0 0 6px ${color}"></div><div class="activity-text"><p>${a.message}</p><span>${a.time}</span></div></div>`;
+            }).join('') : `
+              <div class="activity-row"><div class="activity-dot" style="background:#22c55e;box-shadow:0 0 6px #22c55e"></div><div class="activity-text"><p>App secured with PIN</p><span>Just now</span></div></div>
+              <div class="activity-row"><div class="activity-dot" style="background:#3b82f6;box-shadow:0 0 6px #3b82f6"></div><div class="activity-text"><p>Location services enabled</p><span>Just now</span></div></div>
+            `}
+          </div>
+        </div>
+
+        <div class="announcements-section">
+          <h3 class="section-title">${t('announcements')}</h3>
+          <div class="announcement-card">
+            <span class="announcement-icon">\u1F6E1</span>
+            <p>Stay safe. Your Shield is always watching.</p>
+          </div>
+          <div class="announcement-card">
+            <span class="announcement-icon">\u1F465</span>
+            <p>Add emergency contacts in Safe Circle for faster response.</p>
+          </div>
         </div>
       </div>
-      <div class="notes-section">
-        <h3>${t('quickNotes')}</h3>
-        <button class="home-lock" id="home-add-note">${t('add')}</button>
-      </div>
+      <nav class="home-nav">${bottomNav('home')}</nav>
     </div>
-  `, 'home');
+  `;
 
-  document.querySelectorAll('.action-btn').forEach(btn => {
+  const timeEl = document.getElementById('hero-time');
+  if (timeEl) {
+    const updateTime = () => { timeEl.textContent = getCurrentTime(); };
+    updateTime();
+    setInterval(updateTime, 60000);
+  }
+
+  document.getElementById('header-lock-btn')?.addEventListener('click', () => requirePin(() => showView('home')));
+  document.querySelectorAll('.action-card').forEach(btn => {
     btn.addEventListener('click', () => {
       const action = (btn as HTMLElement).dataset.action;
       if (action === 'panic') showView('panic');
       else if (action === 'checkin') showView('checkin');
-      else if (action === 'vault') showView('vaultHome');
-      else if (action === 'playbook') showView('playbook');
+      else if (action === 'safeCircle') showView('safeCircle');
+      else if (action === 'resources') showView('resources');
     });
   });
-  document.getElementById('home-add-note')?.addEventListener('click', () => showView('vaultAdd'));
   attachNavListeners();
 }
 
-// ===================== PANIC =====================
 function sendPanicSMS(silent = false): void {
   const contacts = getTrustedContacts();
   if (contacts.length === 0) { showToast(t('noContact')); return; }
@@ -499,24 +573,18 @@ function sendPanicSMS(silent = false): void {
       const lat = pos.coords.latitude.toFixed(5);
       const lng = pos.coords.longitude.toFixed(5);
       const msg = `SHIELD PANIC ALERT: I need help! Location: https://maps.google.com/?q=${lat},${lng}`;
-      contacts.forEach(c => {
-        window.open(`sms:${c}?body=${encodeURIComponent(msg)}`, '_blank');
-      });
-      logAlert('panic', `Panic sent to ${contacts.join(', ')}`);
+      contacts.forEach(c => window.open(`sms:${c}?body=${encodeURIComponent(msg)}`, '_blank'));
+      logAlert('panic', `Panic alert sent to ${contacts.join(', ')}`);
       if (!silent) showToast(t('panicSent'));
     }, () => {
       const msg = 'SHIELD PANIC ALERT: I need help! Location unavailable.';
-      contacts.forEach(c => {
-        window.open(`sms:${c}?body=${encodeURIComponent(msg)}`, '_blank');
-      });
+      contacts.forEach(c => window.open(`sms:${c}?body=${encodeURIComponent(msg)}`, '_blank'));
       logAlert('panic', `Panic sent (no location)`);
       if (!silent) showToast(t('panicSent'));
     });
   } else {
     const msg = 'SHIELD PANIC ALERT: I need help!';
-    contacts.forEach(c => {
-      window.open(`sms:${c}?body=${encodeURIComponent(msg)}`, '_blank');
-    });
+    contacts.forEach(c => window.open(`sms:${c}?body=${encodeURIComponent(msg)}`, '_blank'));
     logAlert('panic', `Panic sent (no GPS)`);
     if (!silent) showToast(t('panicSent'));
   }
@@ -529,7 +597,7 @@ function renderPanic(): void {
       <div class="panic-ring" id="panic-ring">
         <div class="panic-inner">\u1F6A8</div>
       </div>
-      <p class="panic-hint">Hold for 3 seconds</p>
+      <p class="panic-hint">Hold for 3 seconds to send alert</p>
       <button class="vault-cancel" id="panic-back">${t('cancel')}</button>
     </div>
   `;
@@ -556,7 +624,6 @@ function renderPanic(): void {
   document.getElementById('panic-back')?.addEventListener('click', () => showView('home'));
 }
 
-// ===================== CHECK-IN =====================
 function renderCheckIn(): void {
   app.innerHTML = `
     <div class="view-page checkin-view">
@@ -574,8 +641,9 @@ function renderCheckIn(): void {
     navigator.geolocation.getCurrentPosition(pos => {
       const lat = pos.coords.latitude.toFixed(5);
       const lng = pos.coords.longitude.toFixed(5);
-      status.innerHTML = `<span style="color:#22c55e">${lat}, ${lng}</span><br><small>Accuracy: ${Math.round(pos.coords.accuracy)}m</small>`;
+      status.innerHTML = `<span style="color:#22c55e;font-size:18px">${lat}, ${lng}</span><br><small style="color:rgba(255,255,255,0.5)">Accuracy: ${Math.round(pos.coords.accuracy)}m</small>`;
       localStorage.setItem(LAST_LOCATION_KEY, `${lat},${lng}`);
+      logAlert('system', 'Location services enabled');
     }, () => { status.textContent = t('locUnavailable'); });
   }
   document.getElementById('checkin-share')?.addEventListener('click', () => {
@@ -594,15 +662,15 @@ function renderCheckIn(): void {
   document.getElementById('checkin-back')?.addEventListener('click', () => showView('home'));
 }
 
-// ===================== VAULT =====================
 function renderVaultHome(): void {
   if (!getVaultPIN()) {
     app.innerHTML = `
       <div class="view-page vault-view">
         <h2 class="view-title">${t('vault')}</h2>
         <div class="vault-setup">
+          <div style="font-size:48px;margin-bottom:16px">\u1F510</div>
           <p>Create a vault PIN to encrypt your files</p>
-          <input type="password" id="vault-set-pin" maxlength="6" placeholder="****" />
+          <input type="password" id="vault-set-pin" maxlength="6" placeholder="****" inputmode="numeric" />
           <button class="setup-button" id="vault-save-pin">${t('save')}</button>
         </div>
         <button class="vault-cancel" id="vault-home-back">${t('cancel')}</button>
@@ -619,7 +687,7 @@ function renderVaultHome(): void {
   }
   app.innerHTML = `
     <div class="view-page vault-view">
-      <h2 class="view-title">${t('vault')}</h2>
+      <h2 class="view-title">\u1F510 ${t('vault')}</h2>
       <div class="vault-actions">
         <button class="vault-action" data-type="photo">\u1F4F7 ${t('vaultAddPhoto')}</button>
         <button class="vault-action" data-type="note">\u1F4DD ${t('vaultAddNote')}</button>
@@ -630,10 +698,7 @@ function renderVaultHome(): void {
     </div>
   `;
   document.querySelectorAll('.vault-action').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const type = (btn as HTMLElement).dataset.type as 'photo' | 'note' | 'document';
-      requirePin(() => showView('vaultAdd'), 'vault');
-    });
+    btn.addEventListener('click', () => requirePin(() => showView('vaultAdd'), 'vault'));
   });
   document.getElementById('vault-view-list')?.addEventListener('click', () => requirePin(() => showView('vaultList'), 'vault'));
   document.getElementById('vault-home-back')?.addEventListener('click', () => showView('home'));
@@ -812,13 +877,7 @@ function saveVaultItem(type: VaultItem['type'], name: string, content: string): 
   const pin = getVaultPIN();
   if (!pin) { showToast('Set vault PIN first'); return; }
   const items = getVaultItems();
-  items.push({
-    id: Date.now().toString(),
-    type,
-    name,
-    data: simpleEncrypt(content, pin),
-    date: new Date().toLocaleDateString()
-  });
+  items.push({ id: Date.now().toString(), type, name, data: simpleEncrypt(content, pin), date: new Date().toLocaleDateString() });
   saveVaultItems(items);
   const map: Record<string, string> = { photo: t('photoSaved'), note: t('noteSaved'), document: t('docSaved') };
   showToast(map[type] || 'Saved');
@@ -826,23 +885,24 @@ function saveVaultItem(type: VaultItem['type'], name: string, content: string): 
   showView('vaultHome');
 }
 
-// ===================== MAP =====================
 function renderMap(): void {
-  app.innerHTML = viewShell(`
-    <div class="view-map">
-      <div class="map-container" id="map-container">
-        <div class="map-loading">Getting your location...</div>
+  app.innerHTML = `
+    <div class="view-page map-view">
+      <h2 class="view-title">${t('map')}</h2>
+      <div class="view-map">
+        <div class="map-container" id="map-container">
+          <div class="map-loading">Getting your location...</div>
+        </div>
+        <div class="map-info">
+          <p id="map-coords">${t('locUnavailable')}</p>
+          <button class="checkin-btn" id="map-share-loc">${t('checkIn')}</button>
+        </div>
       </div>
-      <div class="map-info">
-        <p id="map-coords">${t('locUnavailable')}</p>
-        <button class="checkin-btn" id="map-share-loc">${t('checkIn')}</button>
-      </div>
+      <nav class="home-nav">${bottomNav('map')}</nav>
     </div>
-  `, 'map');
-
+  `;
   const container = document.getElementById('map-container')!;
   const coordsEl = document.getElementById('map-coords')!;
-
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(
       (pos) => {
@@ -852,26 +912,19 @@ function renderMap(): void {
         const maxLng = Number(lng) + 0.01;
         const minLat = Number(lat) - 0.01;
         const maxLat = Number(lat) + 0.01;
-        container.innerHTML = `
-          <iframe 
-            width="100%" height="100%" frameborder="0" scrolling="no" marginheight="0" marginwidth="0"
-            src="https://www.openstreetmap.org/export/embed.html?bbox=${minLng}%2C${minLat}%2C${maxLng}%2C${maxLat}&layer=mapnik&marker=${lat}%2C${lng}"
-            style="border:none; border-radius: 16px; filter: invert(1) hue-rotate(180deg);"
-          ></iframe>
-        `;
-        coordsEl.innerHTML = `<span style="color:#22c55e">${lat}, ${lng}</span><br><span style="font-size:11px;color:rgba(255,255,255,0.4)">Accuracy: ${Math.round(pos.coords.accuracy)}m</span>`;
+        container.innerHTML = `<iframe width="100%" height="100%" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" src="https://www.openstreetmap.org/export/embed.html?bbox=${minLng}%2C${minLat}%2C${maxLng}%2C${maxLat}&layer=mapnik&marker=${lat}%2C${lng}" style="border:none; border-radius: 16px; filter: invert(1) hue-rotate(180deg);"></iframe>`;
+        coordsEl.innerHTML = `<span style="color:#22c55e;font-size:16px">${lat}, ${lng}</span><br><span style="font-size:11px;color:rgba(255,255,255,0.4)">Accuracy: ${Math.round(pos.coords.accuracy)}m</span>`;
         localStorage.setItem(LAST_LOCATION_KEY, `${lat},${lng}`);
       },
       () => {
-        container.innerHTML = `<div class="map-placeholder"><div class="map-icon">\u1F5FA;</div><h2>Location Access Denied</h2><p>Enable location services to see your position.</p></div>`;
+        container.innerHTML = `<div class="map-placeholder"><div class="map-icon">\u1F5FA</div><h2>Location Access Denied</h2><p>Enable location services to see your position.</p></div>`;
         coordsEl.textContent = t('locUnavailable');
       },
       { enableHighAccuracy: true, timeout: 10000 }
     );
   } else {
-    container.innerHTML = `<div class="map-placeholder"><div class="map-icon">\u1F5FA;</div><h2>Not Supported</h2><p>Your browser does not support geolocation.</p></div>`;
+    container.innerHTML = `<div class="map-placeholder"><div class="map-icon">\u1F5FA</div><h2>Not Supported</h2><p>Your browser does not support geolocation.</p></div>`;
   }
-
   document.getElementById('map-share-loc')?.addEventListener('click', () => {
     const last = localStorage.getItem(LAST_LOCATION_KEY);
     const contacts = getTrustedContacts();
@@ -888,35 +941,28 @@ function renderMap(): void {
   attachNavListeners();
 }
 
-// ===================== ALERTS =====================
 function renderAlerts(): void {
   const alerts = getAlerts();
   const alertHtml = alerts.length === 0
-    ? `<div class="alert-empty"><div class="alert-icon">\u1F514;</div><p>No alerts yet</p><span style="color:rgba(255,255,255,0.4);font-size:12px">Panic and Check-in events appear here</span></div>`
+    ? `<div class="alert-empty"><div class="alert-icon">\u1F514</div><p>No alerts yet</p><span style="color:rgba(255,255,255,0.4);font-size:12px">Panic and Check-in events appear here</span></div>`
     : alerts.map(a => {
-        const icon = a.type === 'panic' ? '\u1F6A8;' : a.type === 'checkin' ? '\u1F4CD;' : a.type === 'vault' ? '\u1F510;' : '\u2139;';
+        const icon = a.type === 'panic' ? '\u1F6A8' : a.type === 'checkin' ? '\u1F4CD' : a.type === 'vault' ? '\u1F510' : '\u2139';
         const color = a.type === 'panic' ? '#ef4444' : a.type === 'checkin' ? '#22c55e' : '#3b82f6';
-        return `
-          <div class="activity-item" style="margin-bottom:8px">
-            <div class="activity-dot" style="background:${color};box-shadow:0 0 6px ${color}80"></div>
-            <div class="activity-info">
-              <p>${icon} ${a.message}</p>
-              <span>${a.time}</span>
-            </div>
-          </div>
-        `;
+        return `<div class="activity-row" style="margin-bottom:8px"><div class="activity-dot" style="background:${color};box-shadow:0 0 6px ${color}80"></div><div class="activity-text"><p>${icon} ${a.message}</p><span>${a.time}</span></div></div>`;
       }).join('');
-
-  app.innerHTML = viewShell(`
-    <div class="view-alerts" style="padding:16px">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-        <h2 class="view-title" style="padding:0;border:none">${t('alerts')}</h2>
-        ${alerts.length > 0 ? `<button class="home-lock" id="clear-alerts" style="width:auto;padding:0 16px;font-size:13px">${t('clear')}</button>` : ''}
+  app.innerHTML = `
+    <div class="view-page alerts-view">
+      <h2 class="view-title">${t('alerts')}</h2>
+      <div class="alerts-content" style="padding:0 16px 80px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+          <span style="font-size:13px;color:rgba(255,255,255,0.5)">${alerts.length} events</span>
+          ${alerts.length > 0 ? `<button class="home-lock" id="clear-alerts" style="width:auto;padding:6px 16px;font-size:12px;border-radius:8px">${t('clear')}</button>` : ''}
+        </div>
+        <div class="activity-list">${alertHtml}</div>
       </div>
-      <div class="activity-list">${alertHtml}</div>
+      <nav class="home-nav">${bottomNav('alerts')}</nav>
     </div>
-  `, 'alerts');
-
+  `;
   document.getElementById('clear-alerts')?.addEventListener('click', () => {
     localStorage.removeItem(ALERTS_KEY);
     showToast(t('alertsCleared'));
@@ -925,58 +971,87 @@ function renderAlerts(): void {
   attachNavListeners();
 }
 
-// ===================== MORE / SETTINGS =====================
 function renderMore(): void {
-  app.innerHTML = viewShell(`
-    <div class="more-grid">
-      <button class="more-item" data-view="settings">\u2699 ${t('settings')}</button>
-      <button class="more-item" data-view="antitheft">\u1F6E1 ${t('antiTheft')}</button>
-      <button class="more-item" data-view="safeCircle">\u1F465 ${t('safeCircle')}</button>
-      <button class="more-item" data-view="resources">\u1F4DA ${t('resources')}</button>
-      <button class="more-item" data-view="playbook">\u1F4D6 ${t('playbook')}</button>
-      <button class="more-item" data-view="calculator">\u1F522 Calculator</button>
+  app.innerHTML = `
+    <div class="view-page more-view">
+      <h2 class="view-title">${t('more')}</h2>
+      <div class="more-grid">
+        <button class="more-item" data-view="settings"><span class="more-icon">\u2699</span><span class="more-label">${t('settings')}</span></button>
+        <button class="more-item" data-view="antitheft"><span class="more-icon">\u1F6E1</span><span class="more-label">${t('antiTheft')}</span></button>
+        <button class="more-item" data-view="safeCircle"><span class="more-icon">\u1F465</span><span class="more-label">${t('safeCircle')}</span></button>
+        <button class="more-item" data-view="vaultHome"><span class="more-icon">\u1F510</span><span class="more-label">${t('vault')}</span></button>
+        <button class="more-item" data-view="playbook"><span class="more-icon">\u1F4D6</span><span class="more-label">${t('playbook')}</span></button>
+        <button class="more-item" data-view="calculator"><span class="more-icon">\u1F522</span><span class="more-label">Calculator</span></button>
+      </div>
+      <nav class="home-nav">${bottomNav('more')}</nav>
     </div>
-  `, 'more');
+  `;
   document.querySelectorAll('.more-item').forEach(btn => {
-    btn.addEventListener('click', () => showView((btn as HTMLElement).dataset.view as ViewName));
+    btn.addEventListener('click', () => {
+      const view = (btn as HTMLElement).dataset.view as ViewName;
+      if (view === 'vaultHome') requirePin(() => showView('vaultHome'), 'vault');
+      else showView(view);
+    });
   });
   attachNavListeners();
 }
 
 function renderSettings(): void {
   app.innerHTML = `
-    <div class="view-page">
+    <div class="view-page settings-view">
       <h2 class="view-title">${t('settings')}</h2>
-      <div class="settings-list">
-        <div class="setting-row">
-          <span>Language</span>
-          <select id="settings-lang">
-            <option value="en" ${currentLang==='en'?'selected':''}>English</option>
-            <option value="pg" ${currentLang==='pg'?'selected':''}>Pidgin</option>
-            <option value="ha" ${currentLang==='ha'?'selected':''}>Hausa</option>
-            <option value="yo" ${currentLang==='yo'?'selected':''}>Yoruba</option>
-            <option value="ig" ${currentLang==='ig'?'selected':''}>Igbo</option>
-            <option value="fr" ${currentLang==='fr'?'selected':''}>French</option>
-          </select>
+      <div class="settings-content">
+        <div class="settings-section">
+          <h4 class="settings-section-title">LANGUAGE</h4>
+          <div class="settings-select-row">
+            <select id="settings-lang">
+              <option value="en" ${currentLang==='en'?'selected':''}>English</option>
+              <option value="pg" ${currentLang==='pg'?'selected':''}>Nigerian Pidgin</option>
+              <option value="ha" ${currentLang==='ha'?'selected':''}>Hausa</option>
+              <option value="yo" ${currentLang==='yo'?'selected':''}>Yoruba</option>
+              <option value="ig" ${currentLang==='ig'?'selected':''}>Igbo</option>
+              <option value="fr" ${currentLang==='fr'?'selected':''}>French</option>
+            </select>
+          </div>
         </div>
-        <div class="setting-row">
-          <span>${t('trustedContact')}</span>
-          <input type="tel" id="settings-contact" value="${getTrustedContact()}" placeholder="+234..." />
+        <div class="settings-section">
+          <h4 class="settings-section-title">SECURITY</h4>
+          <button class="settings-row-btn" id="settings-reset-pin">${t('resetPin')}</button>
+          <button class="settings-row-btn" id="settings-vault">\u1F510 ${t('secretVault')}</button>
         </div>
-        <button class="setup-button" id="settings-save">${t('save')}</button>
-        <button class="vault-cancel" id="settings-back">${t('cancel')}</button>
+        <div class="settings-section">
+          <h4 class="settings-section-title">\u1F6E1 ANTI-THEFT</h4>
+          <button class="settings-row-btn" id="settings-antitheft">${t('antiTheftSettings')}</button>
+        </div>
+        <div class="settings-section">
+          <h4 class="settings-section-title">${t('aboutShield')}</h4>
+          <div class="about-card">
+            <div class="about-shield">\u1F6E1</div>
+            <h3>SHIELD</h3>
+            <p class="about-version">${t('version')}</p>
+            <p class="about-desc">${t('aboutDesc')}</p>
+          </div>
+        </div>
       </div>
+      <nav class="home-nav">${bottomNav('more')}</nav>
     </div>
   `;
-  document.getElementById('settings-save')?.addEventListener('click', () => {
+  document.getElementById('settings-lang')?.addEventListener('change', () => {
     const lang = (document.getElementById('settings-lang') as HTMLSelectElement).value as Lang;
-    const contact = (document.getElementById('settings-contact') as HTMLInputElement).value.trim();
     currentLang = lang;
     localStorage.setItem(LANG_KEY, lang);
-    if (contact) localStorage.setItem(CONTACT_KEY, contact);
-    showToast('Saved'); showView('more');
+    showToast('Language saved');
   });
-  document.getElementById('settings-back')?.addEventListener('click', () => showView('more'));
+  document.getElementById('settings-reset-pin')?.addEventListener('click', () => {
+    localStorage.removeItem(PIN_KEY);
+    localStorage.removeItem(DURESS_PIN_KEY);
+    localStorage.removeItem(SETUP_DONE_KEY);
+    showToast('PIN reset. Restart app.');
+    setTimeout(() => location.reload(), 1500);
+  });
+  document.getElementById('settings-vault')?.addEventListener('click', () => requirePin(() => showView('vaultHome'), 'vault'));
+  document.getElementById('settings-antitheft')?.addEventListener('click', () => showView('antitheft'));
+  attachNavListeners();
 }
 
 function renderAntiTheft(): void {
@@ -984,32 +1059,32 @@ function renderAntiTheft(): void {
   app.innerHTML = `
     <div class="view-page">
       <h2 class="view-title">${t('antiTheft')}</h2>
-      <div class="antitheft-card">
-        <p><strong>${t('lastLocation')}</strong></p>
-        <p style="color:#22c55e;font-size:13px">${last}</p>
-        <button class="setup-button" id="antitheft-loc">${t('findPhone')}</button>
+      <div class="settings-content">
+        <div class="antitheft-card">
+          <p><strong>${t('lastLocation')}</strong></p>
+          <p style="color:#22c55e;font-size:14px;margin:8px 0">${last}</p>
+          <button class="setup-button" id="antitheft-loc">${t('findPhone')}</button>
+        </div>
+        <div class="antitheft-card">
+          <p><strong>${t('trustedContact')}</strong></p>
+          <input type="tel" id="antitheft-contact" value="${getTrustedContact()}" placeholder="+234..." />
+          <small style="display:block;color:rgba(255,255,255,0.3);font-size:11px;margin:8px 0">${t('trustedDesc')}</small>
+          <button class="setup-button" id="antitheft-save">${t('saveContact')}</button>
+        </div>
+        <button class="vault-cancel" id="antitheft-back">${t('cancel')}</button>
       </div>
-      <div class="antitheft-card">
-        <p><strong>${t('trustedContact')}</strong></p>
-        <input type="tel" id="antitheft-contact" value="${getTrustedContact()}" placeholder="+234..." />
-        <small>${t('trustedDesc')}</small>
-        <button class="setup-button" id="antitheft-save">${t('saveContact')}</button>
-      </div>
-      <button class="vault-cancel" id="antitheft-back">${t('cancel')}</button>
     </div>
   `;
   document.getElementById('antitheft-loc')?.addEventListener('click', () => {
     const last = localStorage.getItem(LAST_LOCATION_KEY);
-    if (last) {
-      const [lat, lng] = last.split(',');
-      window.open(`https://maps.google.com/?q=${lat},${lng}`, '_blank');
-    } else { showToast(t('locUnavailable')); }
+    if (last) { const [lat, lng] = last.split(','); window.open(`https://maps.google.com/?q=${lat},${lng}`, '_blank'); }
+    else { showToast(t('locUnavailable')); }
   });
   document.getElementById('antitheft-save')?.addEventListener('click', () => {
     const c = (document.getElementById('antitheft-contact') as HTMLInputElement).value.trim();
     if (c) { localStorage.setItem(CONTACT_KEY, c); showToast('Saved'); }
   });
-  document.getElementById('antitheft-back')?.addEventListener('click', () => showView('more'));
+  document.getElementById('antitheft-back')?.addEventListener('click', () => showView('settings'));
 }
 
 function renderSafeCircle(): void {
@@ -1017,7 +1092,7 @@ function renderSafeCircle(): void {
     <div class="view-page">
       <h2 class="view-title">${t('safeCircle')}</h2>
       <div class="coming-soon">
-        <div style="font-size:48px;margin-bottom:16px">\u1F465;</div>
+        <div style="font-size:48px;margin-bottom:16px">\u1F465</div>
         <h3>${t('comingSoon')}</h3>
         <p>Store multiple emergency contacts for one-tap reach</p>
         <p style="color:rgba(255,255,255,0.4);font-size:12px;margin-top:8px">For now, use Settings to save trusted contacts (comma-separated)</p>
@@ -1025,7 +1100,7 @@ function renderSafeCircle(): void {
       <button class="vault-cancel" id="safe-back">${t('close')}</button>
     </div>
   `;
-  document.getElementById('safe-back')?.addEventListener('click', () => showView('more'));
+  document.getElementById('safe-back')?.addEventListener('click', () => showView('home'));
 }
 
 function renderPlaybook(): void {
@@ -1036,7 +1111,7 @@ function renderPlaybook(): void {
         <div class="playbook-item"><h4>\u1F6A8 Panic Protocol</h4><p>Hold panic for 3s. SMS sends location to all trusted contacts.</p></div>
         <div class="playbook-item"><h4>\u1F4CD Check-In</h4><p>Share your live location discreetly without triggering panic.</p></div>
         <div class="playbook-item"><h4>\u1F510 Vault</h4><p>Encrypt photos, notes, and documents behind a separate PIN.</p></div>
-        <div class="playbook-item"><h4>\u1F6E1 Duress PIN</h4><p>Your duress PIN is your normal PIN + 1111 (modulo). It unlocks but silently alerts.</p></div>
+        <div class="playbook-item"><h4>\u1F6E1 Duress PIN</h4><p>Your duress PIN is your normal PIN + 1111. It unlocks but silently alerts.</p></div>
       </div>
       <button class="vault-cancel" id="playbook-back">${t('close')}</button>
     </div>
@@ -1049,42 +1124,94 @@ function renderResources(): void {
     <div class="view-page">
       <h2 class="view-title">${t('resources')}</h2>
       <div class="resource-list">
-        <a class="resource-card" href="tel:112"><div class="resource-icon">\u1F6A8;</div><div><h4>Emergency (112)</h4><p>Pan-Nigeria emergency</p></div></a>
-        <a class="resource-card" href="tel:199"><div class="resource-icon">\u1F469;</div><div><h4>Violence Helpline (199)</h4><p>Domestic & gender-based violence</p></div></a>
-        <a class="resource-card" href="https://www.warifng.org" target="_blank"><div class="resource-icon">\u1F3E5;</div><div><h4>WARIF</h4><p>Women at Risk International</p></div></a>
+        <a class="resource-card" href="tel:112"><div class="resource-icon">\u1F6A8</div><div><h4>Emergency (112)</h4><p>Pan-Nigeria emergency</p></div></a>
+        <a class="resource-card" href="tel:199"><div class="resource-icon">\u1F469</div><div><h4>Violence Helpline (199)</h4><p>Domestic & gender-based violence</p></div></a>
+        <a class="resource-card" href="https://www.warifng.org" target="_blank"><div class="resource-icon">\u1F3E5</div><div><h4>WARIF</h4><p>Women at Risk International</p></div></a>
       </div>
       <button class="vault-cancel" id="resources-back">${t('close')}</button>
     </div>
   `;
-  document.getElementById('resources-back')?.addEventListener('click', () => showView('more'));
+  document.getElementById('resources-back')?.addEventListener('click', () => showView('home'));
 }
 
-// ===================== CALCULATOR (DISGUISE) =====================
+// Safe math evaluator - replaces eval() completely
+function safeCalc(expr: string): number {
+  let e = expr.replace(/\u00D7/g, '*').replace(/\u00F7/g, '/').replace(/\u2212/g, '-');
+  e = e.replace(/sin\(/g, 'S(').replace(/cos\(/g, 'C(').replace(/tan\(/g, 'T(')
+       .replace(/log\(/g, 'L(').replace(/ln\(/g, 'N(').replace(/sqrt\(/g, 'Q(')
+       .replace(/\^/g, '**');
+  if (!/^[\d+\-*/().\s%^SCOTLNQ]+$/.test(e)) return NaN;
+  e = e.replace(/S\(/g, 'Math.sin(').replace(/C\(/g, 'Math.cos(').replace(/T\(/g, 'Math.tan(')
+       .replace(/L\(/g, 'Math.log10(').replace(/N\(/g, 'Math.log(').replace(/Q\(/g, 'Math.sqrt(');
+  try {
+    const fn = new Function('return (' + e + ')');
+    const result = fn();
+    return typeof result === 'number' && !isNaN(result) ? result : NaN;
+  } catch {
+    return NaN;
+  }
+}
+
 function renderCalculator(): void {
   app.innerHTML = `
     <div class="calculator-container">
-      <div class="calc-display" id="calc-display">0</div>
+      <div class="calc-header">
+        <button class="calc-mode" id="calc-sci">SCI</button>
+        <div class="calc-display" id="calc-display">0</div>
+      </div>
       <div class="calc-buttons">
-        ${['C','/','*','-','7','8','9','+','4','5','6','=','1','2','3','0','.'].map(k => `<button class="calc-btn" data-calc="${k}">${k}</button>`).join('')}
+        <button class="calc-btn calc-grey" data-calc="C">C</button>
+        <button class="calc-btn calc-orange" data-calc="BS">\u232B</button>
+        <button class="calc-btn calc-orange" data-calc="%">%</button>
+        <button class="calc-btn calc-orange" data-calc="/">\u00F7</button>
+        <button class="calc-btn calc-dark" data-calc="7">7</button>
+        <button class="calc-btn calc-dark" data-calc="8">8</button>
+        <button class="calc-btn calc-dark" data-calc="9">9</button>
+        <button class="calc-btn calc-orange" data-calc="*">\u00D7</button>
+        <button class="calc-btn calc-dark" data-calc="4">4</button>
+        <button class="calc-btn calc-dark" data-calc="5">5</button>
+        <button class="calc-btn calc-dark" data-calc="6">6</button>
+        <button class="calc-btn calc-orange" data-calc="-">\u2212</button>
+        <button class="calc-btn calc-dark" data-calc="1">1</button>
+        <button class="calc-btn calc-dark" data-calc="2">2</button>
+        <button class="calc-btn calc-dark" data-calc="3">3</button>
+        <button class="calc-btn calc-orange" data-calc="+">+</button>
+        <button class="calc-btn calc-dark calc-zero" data-calc="0">0</button>
+        <button class="calc-btn calc-dark" data-calc=".">.</button>
+        <button class="calc-btn calc-green" data-calc="=">=</button>
       </div>
       <button class="vault-cancel" id="calc-exit" style="margin-top:12px">Exit Calculator</button>
     </div>
   `;
   let expr = '';
+  let sciMode = false;
   const display = document.getElementById('calc-display')!;
   document.querySelectorAll('.calc-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const k = (btn as HTMLElement).dataset.calc!;
       if (k === 'C') expr = '';
-      else if (k === '=') { try { expr = String(eval(expr) || '0'); } catch { expr = 'Err'; } }
+      else if (k === 'BS') expr = expr.slice(0, -1);
+      else if (k === '=') {
+        const result = safeCalc(expr);
+        expr = isNaN(result) ? 'Error' : String(result);
+      }
+      else if (k === '%') {
+        const result = safeCalc(expr);
+        expr = isNaN(result) ? 'Error' : String(result / 100);
+      }
       else expr += k;
       display.textContent = expr || '0';
     });
   });
+  document.getElementById('calc-sci')?.addEventListener('click', () => {
+    sciMode = !sciMode;
+    const btn = document.getElementById('calc-sci')!;
+    btn.classList.toggle('active', sciMode);
+    showToast(sciMode ? 'Scientific mode ON' : 'Scientific mode OFF');
+  });
   document.getElementById('calc-exit')?.addEventListener('click', () => showView('home'));
 }
 
-// ===================== INIT =====================
 function init(): void {
   const savedLang = localStorage.getItem(LANG_KEY) as Lang;
   if (savedLang && i18n[savedLang]) currentLang = savedLang;
