@@ -1,6 +1,6 @@
+import './style.css';
 import { Calculator } from './components/Calculator';
 import { isFirstLaunch, savePIN, verifyPIN, resetPIN } from './utils/security';
-import './style.css';
 
 const app = document.getElementById('app')!;
 let calculator: Calculator | null = null;
@@ -209,6 +209,46 @@ const i18n: Record<string, Record<string, string>> = {
     stealthMode: 'Mode Nzuzo', stealthDesc: 'Mepee dị ka kalkuletà mgbe niile',
     nativeFeatures: 'Ngwa Asụsụ', nativeDesc: 'Nchọpụta mgbanwe SIM chọrọ Shield Pro.',
     downloadPro: 'Nweta Shield Pro',
+  },
+  pg: {
+    shield: 'SHIELD', subtitle: 'Your Safety Padi', protected: 'You Dey Safe',
+    status: 'Wetin Dey Happen', time: 'Time Wey E Be', location: 'Where You Dey', active: 'E Dey Work',
+    quickActions: 'Wetin You Wan Do Quick', panicAlert: 'Shout Help', panicDesc: 'Send signal say wahala dey',
+    checkIn: 'Show Where You Dey', checkInDesc: 'Tell your people where you dey',
+    safeCircle: 'Your People', safeCircleDesc: 'Manage your contacts',
+    resources: 'Wetin Fit Help You', resourcesDesc: 'Safety guide and help',
+    activity: 'Wetin Happen', appSecured: 'App don lock with PIN',
+    locEnabled: 'Location dey on', justNow: 'Just Now',
+    notes: 'News', note1: 'Dey safe. Your Shield dey watch you.',
+    note2: 'Add emergency contacts for your people so dem fit respond quick.',
+    home: 'House', map: 'Map', alerts: 'Alert', more: 'More',
+    settings: 'Settings', language: 'Language', resetPin: 'Change PIN',
+    about: 'About Shield', version: 'Version 2.0.0',
+    pinSetupTitle: 'Set Your PIN', pinSetupSub: 'Set 4-digit PIN to open Shield.',
+    enterPin: 'Type PIN', confirmPin: 'Confirm PIN', savePin: 'Save PIN',
+    pinHint: 'Default open: 2+4+6+8==', pinErrorMatch: 'PIN no match',
+    pinErrorLength: 'PIN must be 4 numbers', pinSaved: 'PIN don save',
+    panicHold: 'HOLD BUTTON — Hold am well to confirm', panicSent: 'WE DON SEND ALERT',
+    checkInSent: 'We don share your location with your people',
+    comingSoon: 'E go soon ready',
+    vaultTitle: 'Secret Place', vaultEnter: 'Type Your Secret Code',
+    vaultCreate: 'Set Secret Code', vaultSub: 'This code go protect your secret files.',
+    vaultConfirm: 'Confirm Code', vaultSave: 'Open Secret Place',
+    vaultErrorMatch: 'Code no match', vaultErrorLength: 'Code must be 4 numbers',
+    vaultHome: 'My Secret Place', vaultPhotos: 'Pictures', vaultNotes: 'Notes',
+    vaultDocs: 'Documents', vaultUpload: 'Upload File',
+    vaultNotePlaceholder: 'Write your secret note here...',
+    vaultSaveNote: 'Lock & Save', vaultEmpty: 'Secret place empty',
+    vaultDelete: 'Delete', vaultDecrypt: 'View', vaultBack: 'Go Back',
+    antitheft: 'Anti-Thief', trustedContact: 'Person Wey You Trust',
+    trustedDesc: 'Phone number for emergency alert',
+    saveContact: 'Save Number', autoLocation: 'Auto Share Location',
+    autoLocDesc: 'Share location when panic happen',
+    lastLocation: 'Last Place Wey You Dey', findPhone: 'Find My Phone',
+    stealthMode: 'Hide Mode', stealthDesc: 'App go always open as calculator',
+    nativeFeatures: 'Phone App Features',
+    nativeDesc: 'SIM change detection and uninstall prevention need Shield Pro for Android.',
+    downloadPro: 'Get Shield Pro',
   },
 };
 
@@ -425,18 +465,43 @@ function attachVaultTrigger(): void {
   const trigger = document.getElementById('vault-trigger');
   if (!trigger) return;
   let pressTimer: number | null = null;
-  const startPress = () => {
+  let isPressing = false;
+  const startPress = (e: Event) => {
+    e.preventDefault();
+    isPressing = true;
+    trigger.style.transform = 'scale(0.95)';
+    trigger.style.opacity = '0.7';
     pressTimer = window.setTimeout(() => {
-      showToast('&#x1F510; ' + t('vaultTitle'));
-      setTimeout(() => showView('vault'), 400);
-    }, 1500);
+      if (isPressing) {
+        trigger.style.transform = '';
+        trigger.style.opacity = '';
+        showToast('&#x1F510; ' + t('vaultTitle'));
+        setTimeout(() => showView('vault'), 400);
+      }
+    }, 1200);
   };
-  const cancelPress = () => { if (pressTimer) { clearTimeout(pressTimer); pressTimer = null; } };
+  const cancelPress = () => {
+    isPressing = false;
+    trigger.style.transform = '';
+    trigger.style.opacity = '';
+    if (pressTimer) { clearTimeout(pressTimer); pressTimer = null; }
+  };
   trigger.addEventListener('mousedown', startPress);
-  trigger.addEventListener('touchstart', startPress);
+  trigger.addEventListener('touchstart', startPress, { passive: false });
   trigger.addEventListener('mouseup', cancelPress);
   trigger.addEventListener('mouseleave', cancelPress);
   trigger.addEventListener('touchend', cancelPress);
+  trigger.addEventListener('touchcancel', cancelPress);
+  let lastTap = 0;
+  trigger.addEventListener('click', (e) => {
+    const now = Date.now();
+    if (now - lastTap < 300) {
+      e.preventDefault();
+      showToast('&#x1F510; ' + t('vaultTitle'));
+      setTimeout(() => showView('vault'), 200);
+    }
+    lastTap = now;
+  });
 }
 
 function startClock(): void {
@@ -900,8 +965,7 @@ function renderSettings(): void {
         <select class="lang-select" id="lang-select">
           <option value="en" ${lang === 'en' ? 'selected' : ''}>English</option>
           <option value="fr" ${lang === 'fr' ? 'selected' : ''}>Francais</option>
-          <option value="es" ${lang === 'es' ? 'selected' : ''}>Espanol</option>
-          <option value="pt" ${lang === 'pt' ? 'selected' : ''}>Portugues</option>
+          <option value="pg" ${lang === 'pg' ? 'selected' : ''}>Pidgin</option>
           <option value="ha" ${lang === 'ha' ? 'selected' : ''}>Hausa</option>
           <option value="yo" ${lang === 'yo' ? 'selected' : ''}>Yoruba</option>
           <option value="ig" ${lang === 'ig' ? 'selected' : ''}>Igbo</option>
@@ -910,6 +974,7 @@ function renderSettings(): void {
       <div class="settings-group">
         <h3>Security</h3>
         <button class="settings-btn" id="reset-pin-btn">${t('resetPin')}</button>
+        <button class="settings-btn secondary" id="vault-settings-btn">&#x1F510; ${t('vaultTitle')}</button>
       </div>
       <div class="settings-group">
         <h3>&#x1F6E1; ${t('antitheft')}</h3>
@@ -935,6 +1000,7 @@ function renderSettings(): void {
     showToast('PIN reset. Restarting...');
     setTimeout(() => renderCalculator(), 1500);
   });
+  document.getElementById('vault-settings-btn')?.addEventListener('click', () => showView('vault'));
   document.getElementById('antitheft-btn')?.addEventListener('click', () => showView('antitheft'));
   attachNavListeners();
 }
