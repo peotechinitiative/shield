@@ -1,6 +1,25 @@
+
 import { Calculator } from './components/Calculator';
 import { isFirstLaunch, savePIN, verifyPIN, resetPIN } from './utils/security';
 import './style.css';
+
+// Force unregister old service workers
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.getRegistrations().then(regs => {
+    for (const reg of regs) {
+      reg.unregister();
+      console.log('Unregistered old service worker');
+    }
+  });
+  // Clear all caches
+  if ('caches' in window) {
+    caches.keys().then(names => {
+      for (const name of names) {
+        caches.delete(name);
+      }
+    });
+  }
+}
 
 const app = document.getElementById('app')!;
 let calculator: Calculator | null = null;
