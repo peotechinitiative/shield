@@ -110,22 +110,19 @@ html, body {
 
 /* ========== HERO CARD ========== */
 .hero-card {
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.08);
+  background: transparent;
+  border: none;
   border-radius: 20px;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   padding: 20px;
   margin-bottom: 12px;
-  transition: transform 0.2s, box-shadow 0.2s;
 }
 
 .hero-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-}
-
-.hero-status {
+  transform: none;
+  box-shadow: none;
+}.hero-status {
   display: flex;
   align-items: center;
   gap: 16px;
@@ -402,8 +399,8 @@ html, body {
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background: #ef4444;
-  border: 3px solid rgba(239,68,68,0.3);
+  background: transparent;
+  border: none;
   color: #fff;
   font-size: 24px;
   cursor: pointer;
@@ -411,19 +408,32 @@ html, body {
   align-items: center;
   justify-content: center;
   margin-top: -20px;
-  box-shadow: 0 4px 20px rgba(239,68,68,0.4);
-  animation: panicPulse 2s infinite;
+  box-shadow: none;
+  animation: none;
   position: relative;
   z-index: 2;
 }
 
-@keyframes panicPulse {
-  0%, 100% { box-shadow: 0 4px 20px rgba(239,68,68,0.4); transform: scale(1); }
-  50% { box-shadow: 0 4px 30px rgba(239,68,68,0.7); transform: scale(1.05); }
+.nav-panic .nav-icon {
+  font-size: 32px;
+  filter: drop-shadow(0 0 10px rgba(239,68,68,0.9));
+  animation: iconGlow 2s ease-in-out infinite;
 }
 
-.nav-panic:active { transform: scale(0.9); }
+@keyframes iconGlow {
+  0%, 100% { 
+    filter: drop-shadow(0 0 6px rgba(239,68,68,0.6)); 
+    transform: scale(1); 
+  }
+  50% { 
+    filter: drop-shadow(0 0 16px rgba(239,68,68,1)); 
+    transform: scale(1.15); 
+  }
+}
 
+.nav-panic:active .nav-icon { 
+  transform: scale(0.9); 
+}
 /* ========== VIEW PAGES (Map, Alerts, Settings, etc.) ========== */
 .view-page {
   height: 100vh;
