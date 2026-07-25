@@ -586,41 +586,6 @@ html, body, #app {
 .about-desc { margin-top: 8px; font-size: 12px; color: #aaa; line-height: 1.5; }
 
 /* ── VAULT ── */
-.vault-page {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #000;
-  padding: 20px;
-}
-.vault-card {
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.12);
-  border-radius: 24px;
-  padding: 32px 24px;
-  width: 100%;
-  max-width: 360px;
-  text-align: center;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-}
-.vault-icon { font-size: 48px; margin-bottom: 16px; }
-.vault-card h1 { font-size: 22px; margin-bottom: 8px; }
-.vault-sub { font-size: 14px; color: #aaa; margin-bottom: 24px; }
-.vault-cancel {
-  width: 100%;
-  background: transparent;
-  border: 1px solid rgba(255,255,255,0.2);
-  border-radius: 10px;
-  padding: 12px;
-  color: #aaa;
-  font-size: 14px;
-  cursor: pointer;
-  margin-top: 10px;
-}
-.vault-view { background: #000; }
 .vault-grid { margin-bottom: 16px; }
 .vault-textarea {
   width: 100%;
