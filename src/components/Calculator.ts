@@ -1,188 +1,332 @@
+export type Operator = '+' | '-' | '*' | '/';
+
 export class Calculator {
   private container: HTMLElement;
-  private onUnlock: (keyLog: string) => Promise<boolean>;
-  private display: HTMLElement;
-  private keyLog = '';
-  private current = '0';
-  private previous = '';
-  private operator = '';
-  private scientific = false;
-  private shouldReset = false;
+  private display: string = '0';
+  private firstValue: number | null = null;
+  private operator: Operator | null = null;
+  private waitingForSecond: boolean = false;
+  private keyLog: string = '';
+  private isScientific: boolean = false;
+  private isRadians: boolean = false;
+  private displayEl: HTMLElement | null = null;
+  private clickHandler: ((e: Event) => void) | null = null;
+  private errorTimeout: number | null = null;
+  private onUnlockAttempt: (keyLog: string) => Promise<boolean>;
 
-  constructor(container: HTMLElement, onUnlock: (keyLog: string) => Promise<boolean>) {
+  constructor(
+    container: HTMLElement,
+    onUnlockAttempt: (keyLog: string) => Promise<boolean>
+  ) {
     this.container = container;
-    this.onUnlock = onUnlock;
+    this.onUnlockAttempt = onUnlockAttempt;
     this.render();
-    this.display = container.querySelector('.calc-display') as HTMLElement;
     this.attachListeners();
   }
 
-  private render(): void {
-    this.container.innerHTML = `
-      <div class="calculator-page">
-        <div class="calc-header">
-          <button class="calc-btn-sci" id="sci-toggle">SCI</button>
-        </div>
-        <div class="calc-display">0</div>
-        <div class="calc-buttons" id="calc-buttons">
-          ${this.scientific ? this.scientificButtons() : ''}
-          <button class="calc-btn calc-btn-op" data-action="clear">C</button>
-          <button class="calc-btn calc-btn-op" data-action="backspace">&#x232B;</button>
-          <button class="calc-btn calc-btn-op" data-action="percent">%</button>
-          <button class="calc-btn calc-btn-op" data-action="operator" data-op="/">&divide;</button>
-          <button class="calc-btn calc-btn-number" data-action="digit" data-digit="7">7</button>
-          <button class="calc-btn calc-btn-number" data-action="digit" data-digit="8">8</button>
-          <button class="calc-btn calc-btn-number" data-action="digit" data-digit="9">9</button>
-          <button class="calc-btn calc-btn-op" data-action="operator" data-op="*">&times;</button>
-          <button class="calc-btn calc-btn-number" data-action="digit" data-digit="4">4</button>
-          <button class="calc-btn calc-btn-number" data-action="digit" data-digit="5">5</button>
-          <button class="calc-btn calc-btn-number" data-action="digit" data-digit="6">6</button>
-          <button class="calc-btn calc-btn-op" data-action="operator" data-op="-">&#x2212;</button>
-          <button class="calc-btn calc-btn-number" data-action="digit" data-digit="1">1</button>
-          <button class="calc-btn calc-btn-number" data-action="digit" data-digit="2">2</button>
-          <button class="calc-btn calc-btn-number" data-action="digit" data-digit="3">3</button>
-          <button class="calc-btn calc-btn-op" data-action="operator" data-op="+">+</button>
-          <button class="calc-btn calc-btn-number calc-btn-wide" data-action="digit" data-digit="0">0</button>
-          <button class="calc-btn calc-btn-number" data-action="decimal">.</button>
-          <button class="calc-btn calc-btn-eq" data-action="equals">=</button>
-        </div>
-      </div>
-    `;
-  }
-
-  private scientificButtons(): string {
-    const sci = [
-      ['sin', 'cos', 'tan', 'log'],
-      ['ln', 'sqrt', 'pow', 'pi'],
-      ['e', '(', ')', 'deg']
-    ];
-    return sci.map(row => 
-      row.map(btn => `<button class="calc-btn calc-btn-sci-fn" data-action="sci" data-fn="${btn}">${btn}</button>`).join('')
-    ).join('');
-  }
-
-  private attachListeners(): void {
-    this.container.querySelectorAll('.calc-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => this.handleButton(e.target as HTMLElement));
-    });
-    this.container.querySelector('#sci-toggle')?.addEventListener('click', () => this.toggleScientific());
-  }
-
-  private handleButton(btn: HTMLElement): void {
-    const action = btn.dataset.action;
-    if (action === 'digit') this.inputDigit(btn.dataset.digit!);
-    else if (action === 'decimal') this.inputDecimal();
-    else if (action === 'operator') this.inputOperator(btn.dataset.op!);
-    else if (action === 'equals') this.inputEquals();
-    else if (action === 'clear') this.inputClear();
-    else if (action === 'backspace') this.inputBackspace();
-    else if (action === 'percent') this.inputPercent();
-    else if (action === 'sci') this.inputSci(btn.dataset.fn!);
-  }
-
-  private inputDigit(digit: string): void {
-    if (this.shouldReset) { this.current = digit; this.shouldReset = false; }
-    else if (this.current === '0') this.current = digit;
-    else this.current += digit;
-    this.keyLog += digit;
-    this.updateDisplay();
-  }
-
-  private inputDecimal(): void {
-    if (this.shouldReset) { this.current = '0.'; this.shouldReset = false; }
-    else if (!this.current.includes('.')) this.current += '.';
-    this.keyLog += '.';
-    this.updateDisplay();
-  }
-
-  private inputOperator(op: string): void {
-    if (this.operator && !this.shouldReset) this.compute();
-    this.previous = this.current;
-    this.operator = op;
-    this.shouldReset = true;
-    this.keyLog += op === '/' ? '/' : op === '*' ? '*' : op;
-    this.updateDisplay();
-  }
-
-  private inputEquals(): void {
-    this.keyLog += '=';
-    this.compute();
-    this.checkUnlock();
-  }
-
-  private inputClear(): void {
-    this.current = '0'; this.previous = ''; this.operator = ''; this.keyLog = '';
-    this.updateDisplay();
-  }
-
-  private inputBackspace(): void {
-    if (this.current.length > 1) this.current = this.current.slice(0, -1);
-    else this.current = '0';
-    this.keyLog = this.keyLog.slice(0, -1);
-    this.updateDisplay();
-  }
-
-  private inputPercent(): void {
-    this.current = (parseFloat(this.current) / 100).toString();
-    this.updateDisplay();
-  }
-
-  private inputSci(fn: string): void {
-    const val = parseFloat(this.current);
-    let res = 0;
-    switch (fn) {
-      case 'sin': res = Math.sin(val); break;
-      case 'cos': res = Math.cos(val); break;
-      case 'tan': res = Math.tan(val); break;
-      case 'log': res = Math.log10(val); break;
-      case 'ln': res = Math.log(val); break;
-      case 'sqrt': res = Math.sqrt(val); break;
-      case 'pow': res = Math.pow(val, 2); break;
-      case 'pi': this.current = Math.PI.toString(); this.updateDisplay(); return;
-      case 'e': this.current = Math.E.toString(); this.updateDisplay(); return;
-      case 'deg': res = val * (Math.PI / 180); break;
+  async input(key: string): Promise<void> {
+    if (this.errorTimeout) {
+      clearTimeout(this.errorTimeout);
+      this.errorTimeout = null;
     }
-    this.current = parseFloat(res.toPrecision(12)).toString();
-    this.updateDisplay();
-  }
 
-  private compute(): void {
-    const prev = parseFloat(this.previous);
-    const curr = parseFloat(this.current);
-    if (isNaN(prev) || isNaN(curr)) return;
-    let res = 0;
-    switch (this.operator) {
-      case '+': res = prev + curr; break;
-      case '-': res = prev - curr; break;
-      case '*': res = prev * curr; break;
-      case '/': res = curr !== 0 ? prev / curr : 0; break;
+    if (['+', '-', '*', '/'].includes(key)) {
+      this.inputOperator(key as Operator);
+    } else if (key === '=') {
+      await this.inputEquals();
+    } else if (key === 'C' || key === 'AC') {
+      this.clear();
+    } else if (key === 'DEL' || key === 'Backspace') {
+      this.backspace();
+    } else if (key === 'SCI' || key === 'BASIC') {
+      this.toggleScientific();
+    } else if (key === 'DEG' || key === 'RAD') {
+      this.toggleAngleMode();
+    } else if (['sin','cos','tan','asin','acos','atan','log','ln','sqrt','cbrt','x2','x3','xy','1/x','pi','e','%','pm','fact','10x','ex','abs'].includes(key)) {
+      this.inputScientific(key);
+    } else {
+      this.inputDigit(key);
     }
-    this.current = parseFloat(res.toPrecision(12)).toString();
-    this.operator = '';
-    this.shouldReset = true;
+  }
+
+  clear(): void {
+    this.display = '0';
+    this.firstValue = null;
+    this.operator = null;
+    this.waitingForSecond = false;
+    this.keyLog = '';
     this.updateDisplay();
   }
 
-  private updateDisplay(): void {
-    if (this.display) this.display.textContent = this.current;
-  }
-
-  private toggleScientific(): void {
-    this.scientific = !this.scientific;
-    const btn = this.container.querySelector('#sci-toggle') as HTMLElement;
-    if (btn) btn.textContent = this.scientific ? 'BASIC' : 'SCI';
-    this.render();
-    this.display = this.container.querySelector('.calc-display') as HTMLElement;
-    this.attachListeners();
+  backspace(): void {
+    if (this.waitingForSecond) return;
+    if (this.display.length > 1 && this.display !== 'Error') {
+      this.display = this.display.slice(0, -1);
+    } else {
+      this.display = '0';
+    }
     this.updateDisplay();
-  }
-
-  private async checkUnlock(): Promise<void> {
-    const unlocked = await this.onUnlock(this.keyLog);
-    if (unlocked) { this.keyLog = ''; }
   }
 
   destroy(): void {
+    if (this.clickHandler) {
+      this.container.removeEventListener('click', this.clickHandler);
+    }
     this.container.innerHTML = '';
+    if (this.errorTimeout) {
+      clearTimeout(this.errorTimeout);
+    }
+  }
+
+  private async checkUnlock(): Promise<void> {
+    const normalized = this.normalizeKeyLog(this.keyLog);
+    try {
+      const wasHandled = await this.onUnlockAttempt(normalized);
+      if (!wasHandled && this.keyLog.length >= 12) {
+        this.display = 'Error';
+        this.updateDisplay();
+        this.errorTimeout = window.setTimeout(() => {
+          this.clear();
+        }, 1500);
+      }
+    } catch (err) {
+      console.error('Unlock check error:', err);
+    }
+  }
+
+  private normalizeKeyLog(keyLog: string): string {
+    return keyLog.replace(/([+\-*/=])\1+/g, '$1');
+  }
+
+  private inputDigit(d: string): void {
+    if (this.waitingForSecond) {
+      this.display = d;
+      this.waitingForSecond = false;
+    } else {
+      if (d === '.' && this.display.includes('.')) return;
+      this.display = (this.display === '0' && d !== '.') ? d : this.display + d;
+    }
+    this.keyLog += d;
+    this.checkUnlock();
+    this.updateDisplay();
+  }
+
+  private inputOperator(op: Operator): void {
+    const current = parseFloat(this.display);
+
+    if (this.firstValue === null) {
+      this.firstValue = current;
+    } else if (this.operator && !this.waitingForSecond) {
+      const result = this.calculate(this.firstValue, current, this.operator);
+      this.display = this.formatResult(result);
+      this.firstValue = result;
+    } else {
+      this.firstValue = current;
+    }
+
+    this.operator = op;
+    this.waitingForSecond = true;
+    this.keyLog += op;
+    this.checkUnlock();
+    this.updateDisplay();
+  }
+
+  private async inputEquals(): Promise<void> {
+    if (this.firstValue === null || this.operator === null) {
+      this.keyLog += '=';
+      await this.checkUnlock();
+      return;
+    }
+
+    const secondValue = parseFloat(this.display);
+    const result = this.calculate(this.firstValue, secondValue, this.operator);
+
+    this.display = this.formatResult(result);
+    this.firstValue = null;
+    this.operator = null;
+    this.waitingForSecond = true;
+    this.keyLog += '=';
+    await this.checkUnlock();
+    this.updateDisplay();
+  }
+
+  private inputScientific(func: string): void {
+    const current = parseFloat(this.display);
+    let result = current;
+    const toRad = (deg: number) => deg * Math.PI / 180;
+    const toDeg = (rad: number) => rad * 180 / Math.PI;
+
+    switch (func) {
+      case 'sin': result = Math.sin(this.isRadians ? current : toRad(current)); break;
+      case 'cos': result = Math.cos(this.isRadians ? current : toRad(current)); break;
+      case 'tan': result = Math.tan(this.isRadians ? current : toRad(current)); break;
+      case 'asin': result = this.isRadians ? Math.asin(current) : toDeg(Math.asin(current)); break;
+      case 'acos': result = this.isRadians ? Math.acos(current) : toDeg(Math.acos(current)); break;
+      case 'atan': result = this.isRadians ? Math.atan(current) : toDeg(Math.atan(current)); break;
+      case 'log': result = Math.log10(current); break;
+      case 'ln': result = Math.log(current); break;
+      case 'sqrt': result = Math.sqrt(current); break;
+      case 'cbrt': result = Math.cbrt(current); break;
+      case 'x2': result = current * current; break;
+      case 'x3': result = current * current * current; break;
+      case 'xy': result = current; break;
+      case '1/x': result = 1 / current; break;
+      case 'pi': result = Math.PI; break;
+      case 'e': result = Math.E; break;
+      case '%': result = current / 100; break;
+      case 'pm': result = -current; break;
+      case 'fact': result = this.factorial(current); break;
+      case '10x': result = Math.pow(10, current); break;
+      case 'ex': result = Math.exp(current); break;
+      case 'abs': result = Math.abs(current); break;
+    }
+
+    this.display = this.formatResult(result);
+    this.waitingForSecond = true;
+    this.updateDisplay();
+  }
+
+  private toggleScientific(): void {
+    this.isScientific = !this.isScientific;
+    this.render();
+    this.attachListeners();
+  }
+
+  private toggleAngleMode(): void {
+    this.isRadians = !this.isRadians;
+    this.render();
+    this.attachListeners();
+  }
+
+  private calculate(a: number, b: number, op: Operator): number {
+    switch (op) {
+      case '+': return this.fixFloat(a + b);
+      case '-': return this.fixFloat(a - b);
+      case '*': return this.fixFloat(a * b);
+      case '/': return b !== 0 ? this.fixFloat(a / b) : NaN;
+    }
+  }
+
+  private fixFloat(n: number): number {
+    return parseFloat(n.toPrecision(12));
+  }
+
+  private formatResult(n: number): string {
+    if (isNaN(n)) return 'Error';
+    if (!isFinite(n)) return 'Error';
+    let str = String(n);
+    if (str.length > 15) {
+      return n.toPrecision(12);
+    }
+    return str;
+  }
+
+  private factorial(n: number): number {
+    if (n < 0) return NaN;
+    if (n === 0 || n === 1) return 1;
+    let result = 1;
+    for (let i = 2; i <= n; i++) {
+      result *= i;
+    }
+    return result;
+  }
+
+  private render(): void {
+    if (this.clickHandler) {
+      this.container.removeEventListener('click', this.clickHandler);
+      this.clickHandler = null;
+    }
+    this.container.innerHTML = '';
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'calculator-container';
+
+    const angleMode = this.isRadians ? 'RAD' : 'DEG';
+
+    const scientificButtons = this.isScientific ? `
+      <div class="sci-row">
+        <button data-key="DEG" class="btn-sci btn-active">${angleMode}</button>
+        <button data-key="sin" class="btn-sci">sin</button>
+        <button data-key="cos" class="btn-sci">cos</button>
+        <button data-key="tan" class="btn-sci">tan</button>
+      </div>
+      <div class="sci-row">
+        <button data-key="ln" class="btn-sci">ln</button>
+        <button data-key="log" class="btn-sci">log</button>
+        <button data-key="sqrt" class="btn-sci">&radic;</button>
+        <button data-key="x2" class="btn-sci">x&sup2;</button>
+      </div>
+      <div class="sci-row">
+        <button data-key="pi" class="btn-sci">&pi;</button>
+        <button data-key="e" class="btn-sci">e</button>
+        <button data-key="1/x" class="btn-sci">1/x</button>
+        <button data-key="%" class="btn-sci">%</button>
+      </div>
+      <div class="sci-row">
+        <button data-key="pm" class="btn-sci">&plusmn;</button>
+        <button data-key="abs" class="btn-sci">|x|</button>
+        <button data-key="fact" class="btn-sci">n!</button>
+        <button data-key="10x" class="btn-sci">10&#x02E3;</button>
+      </div>
+    ` : '';
+
+    wrapper.innerHTML = `
+      <div class="calculator-body">
+        <div class="calc-header">
+          <button data-key="SCI" class="btn-toggle">${this.isScientific ? 'BASIC' : 'SCI'}</button>
+        </div>
+        <div class="calc-display" id="calc-display">${this.display}</div>
+        <div class="calc-buttons ${this.isScientific ? 'scientific' : ''}">
+          ${scientificButtons}
+          <div class="btn-row">
+            <button data-key="C" class="btn-clear">C</button>
+            <button data-key="DEL" class="btn-op">&#x232B;</button>
+            <button data-key="%" class="btn-op">%</button>
+            <button data-key="/" class="btn-op">&divide;</button>
+          </div>
+          <div class="btn-row">
+            <button data-key="7" class="btn-num">7</button>
+            <button data-key="8" class="btn-num">8</button>
+            <button data-key="9" class="btn-num">9</button>
+            <button data-key="*" class="btn-op">&times;</button>
+          </div>
+          <div class="btn-row">
+            <button data-key="4" class="btn-num">4</button>
+            <button data-key="5" class="btn-num">5</button>
+            <button data-key="6" class="btn-num">6</button>
+            <button data-key="-" class="btn-op">&minus;</button>
+          </div>
+          <div class="btn-row">
+            <button data-key="1" class="btn-num">1</button>
+            <button data-key="2" class="btn-num">2</button>
+            <button data-key="3" class="btn-num">3</button>
+            <button data-key="+" class="btn-op">+</button>
+          </div>
+          <div class="btn-row">
+            <button data-key="0" class="btn-num btn-zero">0</button>
+            <button data-key="." class="btn-num">.</button>
+            <button data-key="=" class="btn-equals">=</button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    this.container.appendChild(wrapper);
+    this.displayEl = wrapper.querySelector('#calc-display');
+  }
+
+  private attachListeners(): void {
+    this.clickHandler = async (e: Event) => {
+      const target = e.target as HTMLElement;
+      const key = target.dataset.key;
+      if (key) await this.input(key);
+    };
+    this.container.addEventListener('click', this.clickHandler);
+  }
+
+  private updateDisplay(): void {
+    if (this.displayEl) {
+      this.displayEl.textContent = this.display;
+    }
   }
 }
