@@ -57,14 +57,14 @@ const i18n: Record<string, Record<string, string>> = {
   fr: {
     shield: 'SHIELD', subtitle: 'Compagnon de Securite', protected: 'Protege',
     status: 'Statut', time: 'Heure Locale', location: 'Localisation', active: 'Actif',
-    quickActions: 'Actions Rapides', panicAlert: 'Alerte Panique', panicDesc: "Envoyer signal d'urgence",
+    quickActions: 'Actions Rapides', panicAlert: 'Alerte Panique', panicDesc: 'Envoyer signal d\'urgence',
     checkIn: 'Enregistrer', checkInDesc: 'Partager votre position',
     safeCircle: 'Cercle Sur', safeCircleDesc: 'Gerer les contacts',
     resources: 'Ressources', resourcesDesc: 'Guides de securite',
     activity: 'Activite', appSecured: 'Application securisee',
-    locEnabled: 'Services de localisation actifs', justNow: "A l'instant",
+    locEnabled: 'Services de localisation actifs', justNow: 'A l\'instant',
     notes: 'Annonces', note1: 'Restez en securite. Votre Shield veille.',
-    note2: "Ajoutez des contacts d'urgence pour une reponse plus rapide.",
+    note2: 'Ajoutez des contacts d\'urgence pour une reponse plus rapide.',
     home: 'Accueil', map: 'Carte', alerts: 'Alertes', more: 'Plus',
     settings: 'Parametres', language: 'Langue', resetPin: 'Reinitialiser PIN',
     about: 'A Propos', version: 'Version 2.0.0',
@@ -85,7 +85,7 @@ const i18n: Record<string, Record<string, string>> = {
     vaultSaveNote: 'Crypter & Sauver', vaultEmpty: 'Coffre vide',
     vaultDelete: 'Supprimer', vaultDecrypt: 'Voir', vaultBack: 'Retour',
     antitheft: 'Anti-Vol', trustedContact: 'Contact de Confiance',
-    trustedDesc: "Numero pour alertes d'urgence",
+    trustedDesc: 'Numero pour alertes d\'urgence',
     saveContact: 'Sauver', autoLocation: 'Partage Auto',
     autoLocDesc: 'Partager position en cas de panique',
     lastLocation: 'Derniere Position', findPhone: 'Trouver mon Tel',
@@ -111,7 +111,7 @@ const i18n: Record<string, Record<string, string>> = {
     enterPin: 'Shigar da PIN', confirmPin: 'Tabbatar da PIN', savePin: 'Ajiye PIN',
     pinHint: 'Bude: 2+4+6+8==', pinErrorMatch: 'PIN basu dace ba',
     pinErrorLength: 'PIN dole ne ya zama lambobi 4', pinSaved: 'An ajiye PIN',
-    panicHold: 'YANAYIN GARGADI — Rike don tabbatar', panicSent: 'AN TURA GARGADI',
+    panicHold: 'YANAYIN GARGADI — Riƙe don tabbatar', panicSent: 'AN TURA GARGADI',
     checkInSent: 'An raba wuri da Sarkon Tsaro',
     comingSoon: 'Zo Da Sauri',
     vaultTitle: 'Vault na Sirri', vaultEnter: 'Shigar da Lamba',
@@ -152,22 +152,22 @@ const i18n: Record<string, Record<string, string>> = {
     pinErrorLength: 'PIN gbodo je onka mokan', pinSaved: 'A fipamora PIN',
     panicHold: 'IPO IKILO — Duro lati jerisi', panicSent: 'A FIRANSE IKILO',
     checkInSent: 'A pin aye pelu Agbo Aabo',
-    comingSoon: 'Nbo Laipe',
-    vaultTitle: 'Ile-Isọ Aṣiri', vaultEnter: 'Tẹ Koodu',
-    vaultCreate: 'Ṣẹda Koodu', vaultSub: 'Koodu yii daabo bo awon faili re.',
-    vaultConfirm: 'Jerisi', vaultSave: 'Si Ile-Isọ',
+    comingSoon: 'Nbo Laipẹ',
+    vaultTitle: 'Ilé-Iṣọ́ Aṣírí', vaultEnter: 'Tẹ Koodu',
+    vaultCreate: 'Ṣẹda Koodu', vaultSub: 'Koodu yii dáàbò bo àwọn fáìlì rẹ.',
+    vaultConfirm: 'Jerisi', vaultSave: 'Ṣi Ilé-Iṣọ́',
     vaultErrorMatch: 'Awon koodu ko yato', vaultErrorLength: 'O gbodo je onka mokan',
-    vaultHome: 'Ile-Isọ Mi', vaultPhotos: 'Aworan', vaultNotes: 'Akiye',
-    vaultDocs: 'Iwe-aṣẹ', vaultUpload: 'Gbe Soke',
-    vaultNotePlaceholder: 'Ko akiyesi re nibi...',
-    vaultSaveNote: 'Pa & Fipamọ', vaultEmpty: 'Ile-Isọ ṣofo',
-    vaultDelete: 'Paarẹ', vaultDecrypt: 'Wo', vaultBack: 'Pada',
+    vaultHome: 'Ilé-Iṣọ́ Mi', vaultPhotos: 'Aworan', vaultNotes: 'Akiye',
+    vaultDocs: 'Iwe-aṣẹ', vaultUpload: 'Gbé Sókè',
+    vaultNotePlaceholder: 'Kọ àkíyèsí rẹ níbí...',
+    vaultSaveNote: 'Pa & Fipamọ', vaultEmpty: 'Ilé-Iṣọ́ ṣofo',
+    vaultDelete: 'Paarẹ', vaultDecrypt: 'Wo', vaultBack: 'Padà',
     antitheft: 'Idaabobo Lodi Barayi', trustedContact: 'Olubasoro Aabo',
     trustedDesc: 'Nọmba fun ikilo gbigba',
     saveContact: 'Fipamọ', autoLocation: 'Pin Ipo Aifisun',
     autoLocDesc: 'Pin ipo nigba ti ikilo ba waye',
     lastLocation: 'Ipo Ikehin', findPhone: 'Wa Foonu Mi',
-    stealthMode: 'Ipo Asiri', stealthDesc: 'Nigbagbogbo ṣi bi kalkuleta',
+    stealthMode: 'Ipo Asiri', stealthDesc: 'Nigbagbogbo ṣi bi kalkuletà',
     nativeFeatures: 'Ohun elo Asa', nativeDesc: 'Iwadii iyipada SIM nilo Shield Pro.',
     downloadPro: 'Gba Shield Pro',
   },
@@ -483,11 +483,11 @@ function renderVaultEntry(): void {
   const hasPin = getVaultPIN();
   const isCreate = !hasPin;
   app.innerHTML = `
-    <div class="setup-wizard">
-      <div class="setup-card">
-        <div class="setup-icon">&#x1F510;</div>
+    <div class="vault-page">
+      <div class="vault-card">
+        <div class="vault-icon">&#x1F510;</div>
         <h1>${isCreate ? t('vaultCreate') : t('vaultEnter')}</h1>
-        <p class="setup-subtitle">${t('vaultSub')}</p>
+        <p class="vault-sub">${t('vaultSub')}</p>
         <div class="pin-input-group">
           <label>${isCreate ? t('vaultCreate') : t('vaultEnter')}</label>
           <input type="password" id="vault-pin1" maxlength="4" placeholder="&#x2022;&#x2022;&#x2022;&#x2022;" inputmode="numeric" pattern="[0-9]*">
@@ -500,7 +500,7 @@ function renderVaultEntry(): void {
         ` : ''}
         <div class="setup-error" id="vault-error"></div>
         <button class="setup-button" id="vault-btn">${t('vaultSave')}</button>
-        <button class="setup-button secondary" id="vault-cancel" style="margin-top:10px;background:rgba(255,255,255,0.1);color:#aaa;">Cancel</button>
+        <button class="vault-cancel" id="vault-cancel">Cancel</button>
       </div>
     </div>
   `;
@@ -519,35 +519,31 @@ function renderVaultEntry(): void {
 
 function renderVaultHome(): void {
   app.innerHTML = `
-    <div class="setup-wizard" style="align-items:flex-start;padding-top:40px;">
-      <div class="setup-card" style="max-width:400px;width:100%;">
-        <div class="setup-icon">&#x1F510;</div>
-        <h1>${t('vaultHome')}</h1>
-        <p class="setup-subtitle">Choose what to store securely</p>
-        <div class="actions-grid vault-grid" style="margin-bottom:16px;">
-          <button class="action-card" id="vault-upload-btn">
-            <div class="action-icon">&#x1F4F7;</div>
-            <div class="action-label">${t('vaultPhotos')}</div>
-            <div class="action-desc">${t('vaultUpload')}</div>
-          </button>
-          <button class="action-card" id="vault-note-btn">
-            <div class="action-icon">&#x1F4DD;</div>
-            <div class="action-label">${t('vaultNotes')}</div>
-            <div class="action-desc">Write secure note</div>
-          </button>
-          <button class="action-card" id="vault-docs-btn">
-            <div class="action-icon">&#x1F4C4;</div>
-            <div class="action-label">${t('vaultDocs')}</div>
-            <div class="action-desc">${t('vaultUpload')}</div>
-          </button>
-          <button class="action-card" id="vault-list-btn">
-            <div class="action-icon">&#x1F4C1;</div>
-            <div class="action-label">My Files</div>
-            <div class="action-desc">View encrypted items</div>
-          </button>
-        </div>
-        <button class="setup-button secondary" id="vault-exit" style="background:rgba(255,255,255,0.1);color:#aaa;">${t('vaultBack')}</button>
+    <div class="view-page vault-view">
+      <h2 class="view-title">&#x1F510; ${t('vaultHome')}</h2>
+      <div class="actions-grid vault-grid">
+        <button class="action-card" id="vault-upload-btn">
+          <div class="action-icon">&#x1F4F7;</div>
+          <div class="action-label">${t('vaultPhotos')}</div>
+          <div class="action-desc">${t('vaultUpload')}</div>
+        </button>
+        <button class="action-card" id="vault-note-btn">
+          <div class="action-icon">&#x1F4DD;</div>
+          <div class="action-label">${t('vaultNotes')}</div>
+          <div class="action-desc">Write secure note</div>
+        </button>
+        <button class="action-card" id="vault-docs-btn">
+          <div class="action-icon">&#x1F4C4;</div>
+          <div class="action-label">${t('vaultDocs')}</div>
+          <div class="action-desc">${t('vaultUpload')}</div>
+        </button>
+        <button class="action-card" id="vault-list-btn">
+          <div class="action-icon">&#x1F4C1;</div>
+          <div class="action-label">My Files</div>
+          <div class="action-desc">View encrypted items</div>
+        </button>
       </div>
+      <button class="vault-cancel" style="margin-top:24px" id="vault-exit">${t('vaultBack')}</button>
     </div>
   `;
 
@@ -590,15 +586,11 @@ function renderVaultHome(): void {
 
 function renderVaultNote(): void {
   app.innerHTML = `
-    <div class="setup-wizard" style="align-items:flex-start;padding-top:40px;">
-      <div class="setup-card" style="max-width:400px;width:100%;">
-        <div class="setup-icon">&#x1F4DD;</div>
-        <h1>${t('vaultNotes')}</h1>
-        <p class="setup-subtitle">Your note is encrypted with your vault code</p>
-        <textarea class="vault-textarea" id="vault-note-text" placeholder="${t('vaultNotePlaceholder')}"></textarea>
-        <button class="setup-button" id="vault-save-note">${t('vaultSaveNote')}</button>
-        <button class="setup-button secondary" id="vault-note-back" style="margin-top:10px;background:rgba(255,255,255,0.1);color:#aaa;">${t('vaultBack')}</button>
-      </div>
+    <div class="view-page vault-view">
+      <h2 class="view-title">&#x1F4DD; ${t('vaultNotes')}</h2>
+      <textarea class="vault-textarea" id="vault-note-text" placeholder="${t('vaultNotePlaceholder')}"></textarea>
+      <button class="setup-button" id="vault-save-note">${t('vaultSaveNote')}</button>
+      <button class="vault-cancel" id="vault-note-back">${t('vaultBack')}</button>
     </div>
   `;
   document.getElementById('vault-save-note')?.addEventListener('click', () => {
@@ -635,14 +627,10 @@ function renderVaultList(): void {
       }).join('');
 
   app.innerHTML = `
-    <div class="setup-wizard" style="align-items:flex-start;padding-top:40px;">
-      <div class="setup-card" style="max-width:400px;width:100%;">
-        <div class="setup-icon">&#x1F4C1;</div>
-        <h1>My Files</h1>
-        <p class="setup-subtitle">${items.length} encrypted item${items.length === 1 ? '' : 's'} in vault</p>
-        <div class="vault-list">${listHtml}</div>
-        <button class="setup-button secondary" id="vault-list-back" style="margin-top:16px;background:rgba(255,255,255,0.1);color:#aaa;">${t('vaultBack')}</button>
-      </div>
+    <div class="view-page vault-view">
+      <h2 class="view-title">&#x1F4C1; My Files</h2>
+      <div class="vault-list">${listHtml}</div>
+      <button class="vault-cancel" id="vault-list-back">${t('vaultBack')}</button>
     </div>
   `;
 
@@ -655,13 +643,10 @@ function renderVaultList(): void {
       const decrypted = simpleDecrypt(item.data, pin);
       if (type === 'photo') {
         app.innerHTML = `
-          <div class="setup-wizard" style="align-items:flex-start;padding-top:40px;">
-            <div class="setup-card" style="max-width:400px;width:100%;">
-              <div class="setup-icon">&#x1F4F7;</div>
-              <h1>${item.name}</h1>
-              <img src="${decrypted}" class="vault-preview-img" style="margin:16px 0;" />
-              <button class="setup-button secondary" id="vault-preview-back" style="background:rgba(255,255,255,0.1);color:#aaa;">${t('vaultBack')}</button>
-            </div>
+          <div class="view-page vault-view">
+            <h2 class="view-title">&#x1F4F7; ${item.name}</h2>
+            <img src="${decrypted}" class="vault-preview-img" />
+            <button class="vault-cancel" id="vault-preview-back">${t('vaultBack')}</button>
           </div>
         `;
       } else if (type === 'note') {
