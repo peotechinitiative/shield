@@ -29,7 +29,24 @@ const VAULT_ITEMS_KEY = 'shield_vault_items';
 const TRUSTED_CONTACT_KEY = 'shield_trusted_contact';
 const LAST_LOCATION_KEY = 'shield_last_location';
 const STEALTH_KEY = 'shield_stealth_mode';
+const ALERTS_KEY = 'shield_alerts';
 
+interface AlertItem {
+  id: string;
+  type: 'panic' | 'checkin' | 'vault' | 'system';
+  message: string;
+  time: string;
+}
+
+function getAlerts(): AlertItem[] {
+  try { return JSON.parse(localStorage.getItem(ALERTS_KEY) || '[]'); }
+  catch { return []; }
+}
+function logAlert(type: AlertItem['type'], message: string): void {
+  const alerts = getAlerts();
+  alerts.unshift({ id: Date.now().toString(), type, message, time: new Date().toLocaleString() });
+  localStorage.setItem(ALERTS_KEY, JSON.stringify(alerts.slice(0, 50))); // keep last 50
+}
 const i18n: Record<string, Record<string, string>> = {
   en: {
     shield: 'SHIELD', subtitle: 'Personal Safety Companion', protected: 'Protected',
@@ -640,7 +657,8 @@ function renderVaultHome(): void {
       reader.onload = () => {
         const pin = getVaultPIN()!;
         addVaultItem({ id: Date.now().toString(), type: 'photo', name: file.name, data: simpleEncrypt(reader.result as string, pin), date: new Date().toLocaleString() });
-        showToast('Photo encrypted & saved');
+        showToast('Photo encrypted & saved'); 
+        logAlert('vault', 'photo saved to vault'); // <-- JUST ADD THIS
       };
       reader.readAsDataURL(file);
     };
@@ -939,29 +957,102 @@ function renderAntiTheft(): void {
 function renderMap(): void {
   app.innerHTML = viewShell(`
     <div class="view-map">
-      <div class="map-placeholder">
-        <div class="map-icon">&#x1F5FA;</div>
-        <h2>${t('map')}</h2>
-        <p>${t('comingSoon')}</p>
+      <div class="map-container" id="map-container">
+        <div class="map-loading">Getting your location...</div>
+      </div>
+      <div class="map-info">
+        <p id="map-coords">Locating...</p>
+        <button class="checkin-btn" id="map-share-loc">${t('checkIn')}</button>
       </div>
     </div>
   `, 'map');
+
+  const container = document.getElementById('map-container')!;
+  const coordsEl = document.getElementById('map-coords')!;
+
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const lat = pos.coords.latitude.toFixed(6);
+        const lng = pos.coords.longitude.toFixed(6);
+        const zoom = 15;
+        // OpenStreetMap embed (no API key needed)
+        container.innerHTML = `
+          <iframe 
+            width="100%" 
+            height="100%" 
+            frameborder="0" 
+            scrolling="no" 
+            marginheight="0" 
+            marginwidth="0" 
+            src="https://www.openstreetmap.org/export/embed.html?bbox=${Number(lng)-0.01}%2C${Number(lat)-0.01}%2C${Number(lng)+0.01}%2C${Number(lat)+0.01}&layer=mapnik&marker=${lat}%2C${lng}"
+            style="border:none; border-radius: 16px; filter: invert(1) hue-rotate(180deg);"
+          ></iframe>
+        `;
+        coordsEl.innerHTML = `<span style="color:#22c55e">${lat}, ${lng}</span><br><span style="font-size:11px;color:rgba(255,255,255,0.4)">Accuracy: ${Math.round(pos.coords.accuracy)}m</span>`;
+        localStorage.setItem(LAST_LOCATION_KEY, `${lat},${lng}`);
+      },
+      () => {
+        container.innerHTML = `<div class="map-placeholder"><div class="map-icon">&#x1F5FA;</div><h2>Location Access Denied</h2><p>Enable location services to see your position.</p></div>`;
+        coordsEl.textContent = 'Location unavailable';
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  } else {
+    container.innerHTML = `<div class="map-placeholder"><div class="map-icon">&#x1F5FA;</div><h2>Not Supported</h2><p>Your browser doesn't support geolocation.</p></div>`;
+  }
+
+  document.getElementById('map-share-loc')?.addEventListener('click', () => {
+    const last = localStorage.getItem(LAST_LOCATION_KEY);
+    const contact = getTrustedContact();
+    if (last && contact) {
+      const [lat, lng] = last.split(',');
+      const msg = `Check-in from Shield: https://maps.google.com/?q=${lat},${lng}`;
+      window.open(`sms:${contact}?body=${encodeURIComponent(msg)}`, '_blank');
+      logAlert('checkin', `Location shared: ${lat}, ${lng}`);
+      showToast(t('checkInSent'));
+    } else {
+      showToast('Set a trusted contact first');
+    }
+  });
+
   attachNavListeners();
 }
-
 function renderAlerts(): void {
+  const alerts = getAlerts();
+  const alertHtml = alerts.length === 0
+    ? `<div class="alert-empty"><div class="alert-icon">&#x1F514;</div><p>No alerts yet</p><span style="color:rgba(255,255,255,0.4);font-size:12px">Panic and Check-in events appear here</span></div>`
+    : alerts.map(a => {
+        const icon = a.type === 'panic' ? '&#x1F6A8;' : a.type === 'checkin' ? '&#x1F4CD;' : a.type === 'vault' ? '&#x1F510;' : '&#x2139;';
+        const color = a.type === 'panic' ? '#ef4444' : a.type === 'checkin' ? '#22c55e' : '#3b82f6';
+        return `
+          <div class="activity-item" style="margin-bottom:8px">
+            <div class="activity-dot" style="background:${color};box-shadow:0 0 6px ${color}80"></div>
+            <div class="activity-info">
+              <p>${icon} ${a.message}</p>
+              <span>${a.time}</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+
   app.innerHTML = viewShell(`
-    <div class="view-alerts">
-      <h2 class="view-title">${t('alerts')}</h2>
-      <div class="alert-empty">
-        <div class="alert-icon">&#x1F514;</div>
-        <p>${t('comingSoon')}</p>
+    <div class="view-alerts" style="padding:16px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <h2 class="view-title" style="padding:0;border:none">${t('alerts')}</h2>
+        ${alerts.length > 0 ? `<button class="home-lock" id="clear-alerts" style="width:auto;padding:0 16px;font-size:13px">Clear</button>` : ''}
       </div>
+      <div class="activity-list">${alertHtml}</div>
     </div>
   `, 'alerts');
+
+  document.getElementById('clear-alerts')?.addEventListener('click', () => {
+    localStorage.removeItem(ALERTS_KEY);
+    showToast('Alerts cleared');
+    renderAlerts();
+  });
   attachNavListeners();
 }
-
 function renderPanic(): void {
   app.innerHTML = `
     <div class="panic-view">
@@ -989,21 +1080,63 @@ function renderPanic(): void {
     holdTimer = window.setTimeout(() => {
       panicRing?.classList.remove('holding');
       const contact = getTrustedContact();
-      if (contact) {
-        if (navigator.geolocation) {
-          navigator.geolocation.getCurrentPosition((pos) => {
+      if (!contact) {
+        showToast('No trusted contact set');
+        return;
+      }
+
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          async (pos) => {
             const lat = pos.coords.latitude.toFixed(6);
             const lng = pos.coords.longitude.toFixed(6);
-            const msg = `PANIC ALERT from Shield! Location: https://maps.google.com/?q=${lat},${lng}`;
-            window.open(`sms:${contact}?body=${encodeURIComponent(msg)}`, '_blank');
-          }, () => {
-            window.open(`sms:${contact}?body=${encodeURIComponent('PANIC ALERT from Shield!')}`, '_blank');
-          });
-        } else {
-          window.open(`sms:${contact}?body=${encodeURIComponent('PANIC ALERT from Shield!')}`, '_blank');
-        }
+            const body = `PANIC ALERT from Shield! Location: https://maps.google.com/?q=${lat},${lng}`;
+
+            try {
+              const res = await fetch('/api/send-sms', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ to: contact, body }),
+              });
+              const data = await res.json();
+              if (data.success) {
+                showToast(t('panicSent'));
+                logAlert('panic', `Panic alert sent to ${contact}`);
+              } else {
+                showToast('Failed to send alert');
+              }
+            } catch {
+              showToast('Network error');
+            }
+          },
+          async () => {
+            const body = 'PANIC ALERT from Shield!';
+            try {
+              await fetch('/api/send-sms', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ to: contact, body }),
+              });
+              showToast(t('panicSent'));
+              logAlert('panic', `Panic alert sent to ${contact}`);
+            } catch {
+              showToast('Failed to send alert');
+            }
+          }
+        );
+      } else {
+        const body = 'PANIC ALERT from Shield!';
+        fetch('/api/send-sms', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ to: contact, body }),
+        })
+          .then(() => {
+            showToast(t('panicSent'));
+            logAlert('panic', `Panic alert sent to ${contact}`);
+          })
+          .catch(() => showToast('Failed to send alert'));
       }
-      showToast(t('panicSent'));
     }, 2000);
   };
   const cancelPanic = () => { if (holdTimer) clearTimeout(holdTimer); panicRing?.classList.remove('holding'); };
@@ -1037,6 +1170,7 @@ function renderCheckIn(): void {
       });
     }
     showToast(t('checkInSent'));
+    logAlert('checkin', `Location shared with Safe Circle`);
     setTimeout(() => showView('home'), 1500);
   });
   attachNavListeners();
