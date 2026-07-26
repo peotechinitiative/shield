@@ -736,7 +736,7 @@ if (type === 'photo') {
   `;
 }
 
-} else if (type === 'note') {
+ else if (type === 'note') {
   app.innerHTML = `
     <div class="view-page vault-view">
       <h2 class="view-title">&#x1F4DD; ${item.name}</h2>
@@ -777,8 +777,6 @@ document.getElementById('vault-share-btn')?.addEventListener('click', async () =
     showToast('No trusted contact set');
   }
 });
-    });
-  });
 
   document.querySelectorAll('.vault-action-btn.delete').forEach(btn => {
     btn.addEventListener('click', () => {
