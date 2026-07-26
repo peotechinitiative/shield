@@ -770,7 +770,7 @@ document.getElementById('vault-share-btn')?.addEventListener('click', async () =
     } catch {
       showToast('Share cancelled');
     }
-  } else if (contact) {
+   else if (contact) {
     // Fallback: SMS the trusted contact
     window.open(`sms:${contact}?body=${encodeURIComponent('Shared from Shield Vault: ' + decrypted)}`, '_blank');
   } else {
