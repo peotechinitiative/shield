@@ -741,54 +741,93 @@ if (type === 'photo') {
     <div class="view-page vault-view">
       <h2 class="view-title">&#x1F4DD; ${item.name}</h2>
       <div class="vault-note-preview">${decrypted.replace(/\n/g, '<br>')}</div>
-      <button class="setup-button" id="vault-share-btn" style="margin-bottom:10px">&#x1F4E4; Share</button>
-      <button class="vault-cancel" id="vault-preview-back">${t('vaultBack')}</button>
+      <button class="setup-button" id="vault-share-btn" style="margin-bottom:10px">
+        &#x1F4E4; Share
+      </button>
+      <button class="vault-cancel" id="vault-preview-back">
+        ${t('vaultBack')}
+      </button>
+    </div>
+  `;
+} else {
+  // Document viewer
+  app.innerHTML = `
+    <div class="view-page vault-view">
+      <h2 class="view-title">&#x1F4C4; ${item.name}</h2>
+
+      <div class="vault-note-preview" style="text-align:center;padding:40px 20px">
+        <div style="font-size:48px;margin-bottom:16px">&#x1F4C4;</div>
+        <p>${item.name}</p>
+        <p style="color:rgba(255,255,255,0.4);font-size:12px;margin-top:8px">
+          Tap Share to send this document
+        </p>
+      </div>
+
+      <button class="setup-button" id="vault-share-btn" style="margin-bottom:10px">
+        &#x1F4E4; Share
+      </button>
+
+      <button class="vault-cancel" id="vault-preview-back">
+        ${t('vaultBack')}
+      </button>
     </div>
   `;
 }
 
-else {
-        const link = document.createElement('a');
-        link.href = decrypted; link.download = item.name; link.click();
-        showToast('Document downloaded'); return;
-      }
-      document.getElementById('vault-preview-back')?.addEventListener('click', () => showView('vaultList'));
-
+// Share button (used for both notes and documents)
 document.getElementById('vault-share-btn')?.addEventListener('click', async () => {
   const contact = getTrustedContact();
+
   if (navigator.share) {
-    // Native share (works on mobile, opens WhatsApp/SMS/etc)
     try {
       const response = await fetch(decrypted);
       const blob = await response.blob();
-      const file = new File([blob], item.name, { type: blob.type });
+
+      const file = new File(
+        [blob],
+        item.name,
+        { type: blob.type || 'application/octet-stream' }
+      );
+
       await navigator.share({
         title: 'Shield Vault Share',
         text: 'Shared from my Shield vault',
         files: [file]
       });
-    } catch {
+    } catch (err) {
+      console.error(err);
       showToast('Share cancelled');
     }
-   else if (contact) {
-    // Fallback: SMS the trusted contact
-    window.open(`sms:${contact}?body=${encodeURIComponent('Shared from Shield Vault: ' + decrypted)}`, '_blank');
+  } else if (contact) {
+    window.open(
+      `sms:${contact}?body=${encodeURIComponent(
+        'Shared from Shield Vault: ' + item.name
+      )}`,
+      '_blank'
+    );
   } else {
     showToast('No trusted contact set');
   }
 });
-    
-  
 
-  document.querySelectorAll('.vault-action-btn.delete').forEach(btn => {
-    btn.addEventListener('click', () => {
-      deleteVaultItem((btn as HTMLElement).dataset.id!);
-      showToast('Deleted'); renderVaultList();
-    });
+// Back button
+document.getElementById('vault-preview-back')?.addEventListener('click', () => {
+  showView('vaultList');
+});
+
+// Delete buttons
+document.querySelectorAll('.vault-action-btn.delete').forEach(btn => {
+  btn.addEventListener('click', () => {
+    deleteVaultItem((btn as HTMLElement).dataset.id!);
+    showToast('Deleted');
+    renderVaultList();
   });
-  document.getElementById('vault-list-back')?.addEventListener('click', () => showView('vaultHome'));
-}
+});
 
+// Back to Vault Home
+document.getElementById('vault-list-back')?.addEventListener('click', () => {
+  showView('vaultHome');
+});
 /* ── ANTI-THEFT ── */
 function renderAntiTheft(): void {
   const contact = getTrustedContact();
