@@ -747,40 +747,12 @@ if (type === 'photo') {
   `;
 }
 
-} else {
-  // Document viewer with share + back
-  app.innerHTML = `
-    <div class="view-page vault-view">
-      <h2 class="view-title">&#x1F4C4; ${item.name}</h2>
-      <div class="vault-note-preview" style="text-align:center;padding:40px 20px">
-        <div style="font-size:48px;margin-bottom:16px">&#x1F4C4;</div>
-        <p>${item.name}</p>
-        <p style="color:rgba(255,255,255,0.4);font-size:12px;margin-top:8px">Tap Share to send this document</p>
-      </div>
-      <button class="setup-button" id="vault-share-btn" style="margin-bottom:10px">&#x1F4E4; Share</button>
-      <button class="vault-cancel" id="vault-preview-back">${t('vaultBack')}</button>
-    </div>
-  `;
-  
-  document.getElementById('vault-share-btn')?.addEventListener('click', async () => {
-    const contact = getTrustedContact();
-    if (navigator.share) {
-      try {
-        const response = await fetch(decrypted);
-        const blob = await response.blob();
-        const file = new File([blob], item.name, { type: blob.type || 'application/octet-stream' });
-        await navigator.share({ title: 'Shield Vault Share', files: [file] });
-      } catch { showToast('Share cancelled'); }
-    } else if (contact) {
-      window.open(`sms:${contact}?body=${encodeURIComponent('Shared from Shield Vault: ' + item.name)}`, '_blank');
-    } else {
-      showToast('No trusted contact set');
-    }
-  });
-  
-  document.getElementById('vault-preview-back')?.addEventListener('click', () => showView('vaultList'));
-  return; // ← important so the old code below doesn't run
-}
+else {
+        const link = document.createElement('a');
+        link.href = decrypted; link.download = item.name; link.click();
+        showToast('Document downloaded'); return;
+      }
+      document.getElementById('vault-preview-back')?.addEventListener('click', () => showView('vaultList'));
 
 document.getElementById('vault-share-btn')?.addEventListener('click', async () => {
   const contact = getTrustedContact();
