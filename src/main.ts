@@ -885,6 +885,22 @@ function renderAntiTheft(): void {
         <p class="setting-desc">${t('trustedDesc')}</p>
         <input type="tel" class="settings-input" id="trusted-phone" placeholder="+234..." value="${contact}">
         <button class="settings-btn secondary" id="save-contact-btn">${t('saveContact')}</button>
+
+document.getElementById('save-contact-btn')?.addEventListener('click', () => {
+    const phone = (document.getElementById('trusted-phone') as HTMLInputElement)?.value;
+    setTrustedContact(phone);
+    showToast('Contact saved');
+    
+    // Add this for instant visual feedback
+    const btn = document.getElementById('save-contact-btn')!;
+    const originalText = btn.textContent;
+    btn.textContent = 'Saved!';
+    btn.style.background = '#22c55e';
+    setTimeout(() => {
+      btn.textContent = originalText;
+      btn.style.background = '';
+    }, 1500);
+  });
       </div>
       <div class="settings-group">
         <h3>${t('autoLocation')}</h3>
