@@ -1408,10 +1408,11 @@ html, body {
 
 .vault-preview-img {
   width: 100%;
+  max-height: 60vh;        /* ← never grows taller than 60% of screen */
+  object-fit: contain;     /* ← keeps aspect ratio, letterboxes if needed */
   border-radius: 16px;
   margin-bottom: 20px;
 }
-
 .vault-note-preview {
   background: rgba(255,255,255,0.04);
   border: 1px solid rgba(255,255,255,0.06);
