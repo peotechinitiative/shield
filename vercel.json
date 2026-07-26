@@ -1,0 +1,7 @@
+{
+  "functions": {
+    "api/send-sms.ts": {
+      "maxDuration": 10
+    }
+  }
+}
