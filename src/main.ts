@@ -885,22 +885,6 @@ function renderAntiTheft(): void {
         <p class="setting-desc">${t('trustedDesc')}</p>
         <input type="tel" class="settings-input" id="trusted-phone" placeholder="+234..." value="${contact}">
         <button class="settings-btn secondary" id="save-contact-btn">${t('saveContact')}</button>
-
-document.getElementById('save-contact-btn')?.addEventListener('click', () => {
-    const phone = (document.getElementById('trusted-phone') as HTMLInputElement)?.value;
-    setTrustedContact(phone);
-    showToast('Contact saved');
-    
-    // Add this for instant visual feedback
-    const btn = document.getElementById('save-contact-btn')!;
-    const originalText = btn.textContent;
-    btn.textContent = 'Saved!';
-    btn.style.background = '#22c55e';
-    setTimeout(() => {
-      btn.textContent = originalText;
-      btn.style.background = '';
-    }, 1500);
-  });
       </div>
       <div class="settings-group">
         <h3>${t('autoLocation')}</h3>
@@ -939,14 +923,28 @@ document.getElementById('save-contact-btn')?.addEventListener('click', () => {
     </div>
   `, 'settings');
 
+  // Event listeners go OUTSIDE the template literal
   document.getElementById('save-contact-btn')?.addEventListener('click', () => {
-    setTrustedContact((document.getElementById('trusted-phone') as HTMLInputElement)?.value);
+    const phone = (document.getElementById('trusted-phone') as HTMLInputElement)?.value;
+    setTrustedContact(phone);
     showToast('Contact saved');
+
+    // Visual feedback
+    const btn = document.getElementById('save-contact-btn')!;
+    const originalText = btn.textContent;
+    btn.textContent = 'Saved!';
+    btn.style.background = '#22c55e';
+    setTimeout(() => {
+      btn.textContent = originalText;
+      btn.style.background = '';
+    }, 1500);
   });
+
   document.getElementById('stealth-toggle')?.addEventListener('change', (e) => {
     setStealthMode((e.target as HTMLInputElement).checked);
     showToast('Stealth mode updated');
   });
+
   document.getElementById('find-phone-btn')?.addEventListener('click', () => {
     const display = document.getElementById('location-display')!;
     display.textContent = 'Getting location...';
@@ -963,12 +961,13 @@ document.getElementById('save-contact-btn')?.addEventListener('click', () => {
       );
     } else { display.textContent = 'Geolocation not supported'; }
   });
+
   document.getElementById('download-pro-btn')?.addEventListener('click', () => {
     showToast('Shield Pro coming to Play Store');
   });
+
   attachNavListeners();
 }
-
 /* ── OTHER VIEWS ── */
 function renderMap(): void {
   app.innerHTML = viewShell(`
