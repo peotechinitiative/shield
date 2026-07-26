@@ -1,4 +1,3 @@
-
 import { Calculator } from './components/Calculator';
 import { isFirstLaunch, savePIN, verifyPIN, resetPIN } from './utils/security';
 import './style.css';
@@ -649,8 +648,10 @@ function renderVaultHome(): void {
   });
 
   document.getElementById('vault-note-btn')?.addEventListener('click', () => showView('vaultNote'));
+
   document.getElementById('vault-docs-btn')?.addEventListener('click', () => {
-    const input = document.createElement('input'); input.type = 'file';
+    const input = document.createElement('input');
+    input.type = 'file';
     input.onchange = (e) => {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (!file) return;
@@ -664,6 +665,7 @@ function renderVaultHome(): void {
     };
     input.click();
   });
+
   document.getElementById('vault-list-btn')?.addEventListener('click', () => showView('vaultList'));
   document.getElementById('vault-exit')?.addEventListener('click', () => showView('home'));
 }
@@ -691,143 +693,168 @@ function renderVaultNote(): void {
 function renderVaultList(): void {
   const items = getVaultItems();
   const pin = getVaultPIN()!;
-  const listHtml = items.length === 0
-    ? `<div class="vault-empty">${t('vaultEmpty')}</div>`
-    : items.map(item => {
-        const icon = item.type === 'photo' ? '&#x1F4F7;' : item.type === 'note' ? '&#x1F4DD;' : '&#x1F4C4;';
-        return `
-          <div class="vault-item" data-id="${item.id}">
-            <div class="vault-item-icon">${icon}</div>
-            <div class="vault-item-info">
-              <p class="vault-item-name">${item.name}</p>
-              <span class="vault-item-date">${item.date}</span>
-            </div>
-            <div class="vault-item-actions">
-              <button class="vault-action-btn view" data-id="${item.id}" data-type="${item.type}">${t('vaultDecrypt')}</button>
-              <button class="vault-action-btn delete" data-id="${item.id}">${t('vaultDelete')}</button>
-            </div>
-          </div>
-        `;
-      }).join('');
+
+  const listHtml =
+    items.length === 0
+      ? `<div class="vault-empty">${t('vaultEmpty')}</div>`
+      : items
+          .map((item) => {
+            const icon =
+              item.type === 'photo'
+                ? '&#x1F4F7;'
+                : item.type === 'note'
+                ? '&#x1F4DD;'
+                : '&#x1F4C4;';
+
+            return `
+              <div class="vault-item" data-id="${item.id}">
+                <div class="vault-item-icon">${icon}</div>
+                <div class="vault-item-info">
+                  <p class="vault-item-name">${item.name}</p>
+                  <span class="vault-item-date">${item.date}</span>
+                </div>
+                <div class="vault-item-actions">
+                  <button class="vault-action-btn view" data-id="${item.id}" data-type="${item.type}">
+                    ${t('vaultDecrypt')}
+                  </button>
+                  <button class="vault-action-btn delete" data-id="${item.id}">
+                    ${t('vaultDelete')}
+                  </button>
+                </div>
+              </div>
+            `;
+          })
+          .join('');
 
   app.innerHTML = `
     <div class="view-page vault-view">
       <h2 class="view-title">&#x1F4C1; My Files</h2>
-      <div class="vault-list">${listHtml}</div>
-      <button class="vault-cancel" id="vault-list-back">${t('vaultBack')}</button>
+      <div class="vault-list">
+        ${listHtml}
+      </div>
+      <button class="vault-cancel" id="vault-list-back">
+        ${t('vaultBack')}
+      </button>
     </div>
   `;
 
-  document.querySelectorAll('.vault-action-btn.view').forEach(btn => {
-    btn.addEventListener('click', () => {
+  // VIEW ITEM
+  document.querySelectorAll('.vault-action-btn.view').forEach((btn) => {
+    btn.addEventListener('click', async () => {
       const id = (btn as HTMLElement).dataset.id!;
       const type = (btn as HTMLElement).dataset.type!;
-      const item = items.find(i => i.id === id);
+
+      const item = items.find((i) => i.id === id);
       if (!item) return;
+
       const decrypted = simpleDecrypt(item.data, pin);
-if (type === 'photo') {
-  app.innerHTML = `
-    <div class="view-page vault-view">
-      <h2 class="view-title">&#x1F4F7; ${item.name}</h2>
-      <img src="${decrypted}" class="vault-preview-img" />
-      <button class="setup-button" id="vault-share-btn" style="margin-bottom:10px">&#x1F4E4; Share</button>
-      <button class="vault-cancel" id="vault-preview-back">${t('vaultBack')}</button>
-    </div>
-  `;
-}
 
-} else if (type === 'note') {
-  app.innerHTML = `
-    <div class="view-page vault-view">
-      <h2 class="view-title">&#x1F4DD; ${item.name}</h2>
-      <div class="vault-note-preview">${decrypted.replace(/\n/g, '<br>')}</div>
-      <button class="setup-button" id="vault-share-btn" style="margin-bottom:10px">
-        &#x1F4E4; Share
-      </button>
-      <button class="vault-cancel" id="vault-preview-back">
-        ${t('vaultBack')}
-      </button>
-    </div>
-  `;
-} else {
-  // Document viewer
-  app.innerHTML = `
-    <div class="view-page vault-view">
-      <h2 class="view-title">&#x1F4C4; ${item.name}</h2>
+      if (type === 'photo') {
+        app.innerHTML = `
+          <div class="view-page vault-view">
+            <h2 class="view-title">&#x1F4F7; ${item.name}</h2>
+            <img src="${decrypted}" class="vault-preview-img" />
+            <button class="setup-button" id="vault-share-btn" style="margin-bottom:10px">
+              &#x1F4E4; Share
+            </button>
+            <button class="vault-cancel" id="vault-preview-back">
+              ${t('vaultBack')}
+            </button>
+          </div>
+        `;
+      } else if (type === 'note') {
+        app.innerHTML = `
+          <div class="view-page vault-view">
+            <h2 class="view-title">&#x1F4DD; ${item.name}</h2>
+            <div class="vault-note-preview">
+              ${decrypted.replace(/\n/g, '<br>')}
+            </div>
+            <button class="setup-button" id="vault-share-btn" style="margin-bottom:10px">
+              &#x1F4E4; Share
+            </button>
+            <button class="vault-cancel" id="vault-preview-back">
+              ${t('vaultBack')}
+            </button>
+          </div>
+        `;
+      } else {
+        app.innerHTML = `
+          <div class="view-page vault-view">
+            <h2 class="view-title">&#x1F4C4; ${item.name}</h2>
+            <div class="vault-note-preview" style="text-align:center;padding:40px 20px">
+              <div style="font-size:48px;margin-bottom:16px">&#x1F4C4;</div>
+              <p>${item.name}</p>
+              <p style="color:rgba(255,255,255,.5);font-size:12px;margin-top:8px">
+                Tap Share to send this document
+              </p>
+            </div>
+            <button class="setup-button" id="vault-share-btn" style="margin-bottom:10px">
+              &#x1F4E4; Share
+            </button>
+            <button class="vault-cancel" id="vault-preview-back">
+              ${t('vaultBack')}
+            </button>
+          </div>
+        `;
+      }
 
-      <div class="vault-note-preview" style="text-align:center;padding:40px 20px">
-        <div style="font-size:48px;margin-bottom:16px">&#x1F4C4;</div>
-        <p>${item.name}</p>
-        <p style="color:rgba(255,255,255,0.4);font-size:12px;margin-top:8px">
-          Tap Share to send this document
-        </p>
-      </div>
+      // SHARE BUTTON
+      document.getElementById('vault-share-btn')?.addEventListener('click', async () => {
+        const contact = getTrustedContact();
 
-      <button class="setup-button" id="vault-share-btn" style="margin-bottom:10px">
-        &#x1F4E4; Share
-      </button>
+        if (navigator.share) {
+          try {
+            const response = await fetch(decrypted);
+            const blob = await response.blob();
 
-      <button class="vault-cancel" id="vault-preview-back">
-        ${t('vaultBack')}
-      </button>
-    </div>
-  `;
-}
+            const file = new File([blob], item.name, {
+              type: blob.type || 'application/octet-stream',
+            });
 
-// Share button (used for both notes and documents)
-document.getElementById('vault-share-btn')?.addEventListener('click', async () => {
-  const contact = getTrustedContact();
-
-  if (navigator.share) {
-    try {
-      const response = await fetch(decrypted);
-      const blob = await response.blob();
-
-      const file = new File(
-        [blob],
-        item.name,
-        { type: blob.type || 'application/octet-stream' }
-      );
-
-      await navigator.share({
-        title: 'Shield Vault Share',
-        text: 'Shared from my Shield vault',
-        files: [file]
+            await navigator.share({
+              title: 'Shield Vault',
+              text: 'Shared from Shield Vault',
+              files: [file],
+            });
+          } catch (err) {
+            console.error(err);
+            showToast('Share cancelled');
+          }
+        } else if (contact) {
+          window.open(
+            `sms:${contact}?body=${encodeURIComponent('Shared from Shield Vault: ' + item.name)}`,
+            '_blank'
+          );
+        } else {
+          showToast('No trusted contact set');
+        }
       });
-    } catch (err) {
-      console.error(err);
-      showToast('Share cancelled');
-    }
-  } else if (contact) {
-    window.open(
-      `sms:${contact}?body=${encodeURIComponent(
-        'Shared from Shield Vault: ' + item.name
-      )}`,
-      '_blank'
-    );
-  } else {
-    showToast('No trusted contact set');
-  }
-});
 
-// Back button
-document.getElementById('vault-preview-back')?.addEventListener('click', () => {
-  showView('vaultList');
-});
-
-// Delete buttons
-document.querySelectorAll('.vault-action-btn.delete').forEach(btn => {
-  btn.addEventListener('click', () => {
-    deleteVaultItem((btn as HTMLElement).dataset.id!);
-    showToast('Deleted');
-    renderVaultList();
+      document.getElementById('vault-preview-back')?.addEventListener('click', () => {
+        showView('vaultList');
+      });
+    });
   });
-});
 
-// Back to Vault Home
-document.getElementById('vault-list-back')?.addEventListener('click', () => {
-  showView('vaultHome');
-});
+  // DELETE ITEM
+  document.querySelectorAll('.vault-action-btn.delete').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const id = (btn as HTMLElement).dataset.id!;
+      if (!confirm('Delete this item?')) {
+        return;
+      }
+      deleteVaultItem(id);
+      showToast('Deleted');
+      renderVaultList();
+    });
+  });
+
+  // BACK BUTTON
+  document.getElementById('vault-list-back')?.addEventListener('click', () => {
+    showView('vaultHome');
+  });
+}
+
 /* ── ANTI-THEFT ── */
 function renderAntiTheft(): void {
   const contact = getTrustedContact();
