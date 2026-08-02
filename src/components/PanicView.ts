@@ -51,12 +51,9 @@ export class PanicView {
     const severity = (el.querySelector<HTMLInputElement>('input[name="severity"]:checked')!).value;
     const pos = await getCurrentPosition();
 
-    el.querySelector('#panicConfirm')!.classList.add('hidden');
-    el.querySelector('#panicSent')!.classList.remove('hidden');
-
     try {
       // Always notify trusted contacts first
-      const panicResult = await triggerPanic(pos || undefined);
+      await triggerPanic(pos || undefined);
 
       // If critical, also trigger police/NGO alert
       if (severity === 'critical') {
@@ -81,6 +78,9 @@ export class PanicView {
         }
       }
 
+      el.querySelector('#panicConfirm')!.classList.add('hidden');
+      el.querySelector('#panicSent')!.classList.remove('hidden');
+
       setTimeout(() => {
         el.querySelector('#panicSent')!.classList.add('hidden');
         el.querySelector('#panicConfirm')!.classList.remove('hidden');
@@ -90,6 +90,8 @@ export class PanicView {
     } catch (err) {
       console.error('Panic failed:', err);
       toast('Alert failed — try calling emergency services directly');
+      el.querySelector('#panicConfirm')!.classList.remove('hidden');
+      el.querySelector('#panicSent')!.classList.add('hidden');
     }
   }
 }

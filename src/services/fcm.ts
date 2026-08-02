@@ -2,6 +2,8 @@ import { initializeApp } from 'firebase/app';
 import { getMessaging, getToken, onMessage } from 'firebase/messaging';
 import { toast } from '../utils/toast';
 
+const FCM_TOKEN_KEY = 'shield_fcm_token';
+
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
@@ -11,6 +13,10 @@ const firebaseConfig = {
 };
 
 let messaging: any = null;
+
+export function getStoredFcmToken(): string | null {
+  return localStorage.getItem(FCM_TOKEN_KEY);
+}
 
 export async function requestNotificationPermission(): Promise<boolean> {
   if (!('Notification' in window)) return false;
@@ -29,6 +35,7 @@ export async function initFCM(): Promise<void> {
     
     if (token) {
       console.log('FCM token:', token);
+      localStorage.setItem(FCM_TOKEN_KEY, token);
       // Save token to Supabase profile
       const { supabase } = await import('./supabase');
       const { data: userData } = await supabase.auth.getUser();

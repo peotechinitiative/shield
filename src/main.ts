@@ -1,5 +1,8 @@
 import { Calculator } from './components/Calculator';
 import { isFirstLaunch, savePIN, verifyPIN, resetPIN } from './utils/security';
+import { buildVaultSharePayload, shareVaultItem } from './utils/vaultShare';
+import { getAlertEndpoint } from './utils/api';
+import { getStoredFcmToken } from './services/fcm';
 import './style.css';
 
 // Force unregister old service workers
@@ -335,6 +338,14 @@ function getTrustedContact(): string { return localStorage.getItem(TRUSTED_CONTA
 function setTrustedContact(phone: string): void { localStorage.setItem(TRUSTED_CONTACT_KEY, phone); }
 function getStealthMode(): boolean { return localStorage.getItem(STEALTH_KEY) === 'true'; }
 function setStealthMode(on: boolean): void { localStorage.setItem(STEALTH_KEY, on ? 'true' : 'false'); }
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
 
 let currentView = 'home';
 function showView(viewName: string): void {
@@ -724,12 +735,15 @@ function renderVaultList(): void {
                 ? '&#x1F4DD;'
                 : '&#x1F4C4;';
 
+            const safeName = escapeHtml(item.name);
+            const safeDate = escapeHtml(item.date);
+
             return `
               <div class="vault-item" data-id="${item.id}">
                 <div class="vault-item-icon">${icon}</div>
                 <div class="vault-item-info">
-                  <p class="vault-item-name">${item.name}</p>
-                  <span class="vault-item-date">${item.date}</span>
+                  <p class="vault-item-name">${safeName}</p>
+                  <span class="vault-item-date">${safeDate}</span>
                 </div>
                 <div class="vault-item-actions">
                   <button class="vault-action-btn view" data-id="${item.id}" data-type="${item.type}">
@@ -766,11 +780,13 @@ function renderVaultList(): void {
       if (!item) return;
 
       const decrypted = simpleDecrypt(item.data, pin);
+      const safeName = escapeHtml(item.name);
+      const safeDecrypted = escapeHtml(decrypted);
 
       if (type === 'photo') {
         app.innerHTML = `
           <div class="view-page vault-view">
-            <h2 class="view-title">&#x1F4F7; ${item.name}</h2>
+            <h2 class="view-title">&#x1F4F7; ${safeName}</h2>
             <img src="${decrypted}" class="vault-preview-img" />
             <button class="setup-button" id="vault-share-btn" style="margin-bottom:10px">
               &#x1F4E4; Share
@@ -783,9 +799,9 @@ function renderVaultList(): void {
       } else if (type === 'note') {
         app.innerHTML = `
           <div class="view-page vault-view">
-            <h2 class="view-title">&#x1F4DD; ${item.name}</h2>
+            <h2 class="view-title">&#x1F4DD; ${safeName}</h2>
             <div class="vault-note-preview">
-              ${decrypted.replace(/\n/g, '<br>')}
+              ${safeDecrypted.replace(/\n/g, '<br>')}
             </div>
             <button class="setup-button" id="vault-share-btn" style="margin-bottom:10px">
               &#x1F4E4; Share
@@ -798,10 +814,10 @@ function renderVaultList(): void {
       } else {
         app.innerHTML = `
           <div class="view-page vault-view">
-            <h2 class="view-title">&#x1F4C4; ${item.name}</h2>
+            <h2 class="view-title">&#x1F4C4; ${safeName}</h2>
             <div class="vault-note-preview" style="text-align:center;padding:40px 20px">
               <div style="font-size:48px;margin-bottom:16px">&#x1F4C4;</div>
-              <p>${item.name}</p>
+              <p>${safeName}</p>
               <p style="color:rgba(255,255,255,.5);font-size:12px;margin-top:8px">
                 Tap Share to send this document
               </p>
@@ -822,17 +838,21 @@ function renderVaultList(): void {
 
         if (navigator.share) {
           try {
-            const response = await fetch(decrypted);
-            const blob = await response.blob();
+            let file: File | undefined;
+            let canShareFiles = false;
 
-            const file = new File([blob], item.name, {
-              type: blob.type || 'application/octet-stream',
-            });
+            if (item.type === 'photo') {
+              const response = await fetch(decrypted);
+              const blob = await response.blob();
+              file = new File([blob], item.name, {
+                type: blob.type || 'application/octet-stream',
+              });
+              canShareFiles = typeof navigator.canShare === 'function' && navigator.canShare({ files: [file] });
+            }
 
-            await navigator.share({
-              title: 'Shield Vault',
-              text: 'Shared from Shield Vault',
-              files: [file],
+            await shareVaultItem(item.type, item.name, decrypted, {
+              file,
+              canShareFiles,
             });
           } catch (err) {
             console.error(err);
@@ -1108,15 +1128,17 @@ function renderPanic(): void {
             const body = `PANIC ALERT from Shield! Location: https://maps.google.com/?q=${lat},${lng}`;
 
             try {
-              const res = await fetch('/api/send-sms', {
+              const fcmToken = getStoredFcmToken();
+              const res = await fetch(getAlertEndpoint(import.meta.env.VITE_PUBLIC_API_BASE_URL || ''), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ to: contact, body }),
+                body: JSON.stringify({ to: contact, body, fcmToken }),
               });
               const data = await res.json();
               if (data.success) {
-                showToast(t('panicSent'));
-                logAlert('panic', `Panic alert sent to ${contact}`);
+                const channel = data.channel || 'sms';
+                showToast(channel === 'push' ? 'Panic alert sent via push' : t('panicSent'));
+                logAlert('panic', `Panic alert sent to ${contact} via ${channel}`);
               } else {
                 showToast('Failed to send alert');
               }
@@ -1127,13 +1149,20 @@ function renderPanic(): void {
           async () => {
             const body = 'PANIC ALERT from Shield!';
             try {
-              await fetch('/api/send-sms', {
+              const fcmToken = getStoredFcmToken();
+              const res = await fetch(getAlertEndpoint(import.meta.env.VITE_PUBLIC_API_BASE_URL || ''), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ to: contact, body }),
+                body: JSON.stringify({ to: contact, body, fcmToken }),
               });
-              showToast(t('panicSent'));
-              logAlert('panic', `Panic alert sent to ${contact}`);
+              const data = await res.json();
+              if (data.success) {
+                const channel = data.channel || 'sms';
+                showToast(channel === 'push' ? 'Panic alert sent via push' : t('panicSent'));
+                logAlert('panic', `Panic alert sent to ${contact} via ${channel}`);
+              } else {
+                showToast('Failed to send alert');
+              }
             } catch {
               showToast('Failed to send alert');
             }
@@ -1141,14 +1170,21 @@ function renderPanic(): void {
         );
       } else {
         const body = 'PANIC ALERT from Shield!';
-        fetch('/api/send-sms', {
+        const fcmToken = getStoredFcmToken();
+        fetch(getAlertEndpoint(import.meta.env.VITE_PUBLIC_API_BASE_URL || ''), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ to: contact, body }),
+          body: JSON.stringify({ to: contact, body, fcmToken }),
         })
-          .then(() => {
-            showToast(t('panicSent'));
-            logAlert('panic', `Panic alert sent to ${contact}`);
+          .then(async (res) => {
+            const data = await res.json();
+            if (data.success) {
+              const channel = data.channel || 'sms';
+              showToast(channel === 'push' ? 'Panic alert sent via push' : t('panicSent'));
+              logAlert('panic', `Panic alert sent to ${contact} via ${channel}`);
+            } else {
+              showToast('Failed to send alert');
+            }
           })
           .catch(() => showToast('Failed to send alert'));
       }
@@ -1192,15 +1228,37 @@ function renderCheckIn(): void {
 }
 
 function renderContacts(): void {
+  const contact = getTrustedContact();
+  const safeContact = escapeHtml(contact);
+
   app.innerHTML = viewShell(`
     <div class="view-contacts">
       <h2 class="view-title">${t('safeCircle')}</h2>
-      <div class="contact-empty">
-        <div class="contact-icon">&#x1F465;</div>
-        <p>${t('comingSoon')}</p>
+      <div class="settings-group">
+        <h3>${t('trustedContact')}</h3>
+        <p class="setting-desc">${t('trustedDesc')}</p>
+        <input type="tel" class="settings-input" id="trusted-phone" placeholder="+234..." value="${safeContact}">
+        <button class="settings-btn secondary" id="save-contact-btn">${t('saveContact')}</button>
+      </div>
+      <div class="settings-group">
+        <h3>Safe Circle Status</h3>
+        <p class="setting-desc">Your trusted contact is used for alerts, check-ins, and emergency sharing.</p>
+        <div class="location-display" id="contact-status-display">${contact ? safeContact : 'No trusted contact saved yet.'}</div>
       </div>
     </div>
   `, 'home');
+
+  document.getElementById('save-contact-btn')?.addEventListener('click', () => {
+    const phone = (document.getElementById('trusted-phone') as HTMLInputElement)?.value.trim();
+    setTrustedContact(phone);
+    showToast('Contact saved');
+
+    const statusEl = document.getElementById('contact-status-display');
+    if (statusEl) {
+      statusEl.textContent = phone || 'No trusted contact saved yet.';
+    }
+  });
+
   attachNavListeners();
 }
 

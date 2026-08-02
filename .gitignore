@@ -9,3 +9,6 @@ dist/
 .env 
 .vercel
 .env*
+secrets/
+android/build-log.txt
+android/gradle/gradle-daemon-jvm.properties
